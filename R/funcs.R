@@ -1,5 +1,5 @@
 # reactable table function
-rct_fun <- function(sums, colnm, grpby = T){
+rct_fun <- function(sums, colnm, grpby = T, yrsel = '1990'){
   
   sticky_style <- list(position = "sticky", left = 0, background = "#fff", zIndex = 1,
                        borderRight = "1px solid #eee")
@@ -35,7 +35,7 @@ rct_fun <- function(sums, colnm, grpby = T){
         `2011` = colDef(footer = sum(sums$`2011`), aggregate = 'sum'),
         `2014` = colDef(footer = sum(sums$`2014`), aggregate = 'sum'),
         `2017` = colDef(footer = sum(sums$`2017`), aggregate = 'sum'),
-        chg = colDef(name = '1990-2017 change', minWidth = 140,
+        chg = colDef(name = paste0(yrsel, '-2017 change'), minWidth = 140,
                      style = jsfun, class = 'sticky right-col-2', headerClass = 'sticky right-col-2', footerClass = 'sticky right-col-2'
         ), 
         chgper = colDef(name = '% change', minWidth = 85,
@@ -58,7 +58,7 @@ rct_fun <- function(sums, colnm, grpby = T){
     out <- reactable(
       sums, 
       columns = list(
-        val = colDef(name = colnm, footer = 'Total', minWidth = 120, class = 'sticky left-col-1-bord', headerClass = 'sticky left-col-1-bord', footerClass = 'sticky left-col-1-bord'), 
+        val = colDef(name = colnm, footer = 'Total', minWidth = 240, class = 'sticky left-col-1-bord', headerClass = 'sticky left-col-1-bord', footerClass = 'sticky left-col-1-bord'), 
         `1990` = colDef(footer = sum(sums$`1990`), aggregate = 'sum'),
         `1995` = colDef(footer = sum(sums$`1995`), aggregate = 'sum'),
         `1999` = colDef(footer = sum(sums$`1999`), aggregate = 'sum'),
@@ -67,7 +67,7 @@ rct_fun <- function(sums, colnm, grpby = T){
         `2011` = colDef(footer = sum(sums$`2011`), aggregate = 'sum'),
         `2014` = colDef(footer = sum(sums$`2014`), aggregate = 'sum'),
         `2017` = colDef(footer = sum(sums$`2017`), aggregate = 'sum'),
-        chg = colDef(name = '1990-2017 change', minWidth = 140,
+        chg = colDef(name = paste0(yrsel, '-2017 change'), minWidth = 140,
                      style = jsfun, class = 'sticky right-col-2', headerClass = 'sticky right-col-2', footerClass = 'sticky right-col-2'
         ), 
         chgper = colDef(name = '% change', minWidth = 85,
@@ -240,6 +240,177 @@ cmprctfun <- function(chgdat, lkup, var = 'HMPU_DESCRIPTOR'){
         headerClass = "sticky right-col-1",
         footerClass = "sticky right-col-1"
         )
+    ),
+    defaultColDef = colDef(
+      footerStyle = list(fontWeight = "bold"),
+      footer = function(values){
+        if(!is.numeric(values))
+          return()
+        
+        round(sum(values), 0)
+        
+      },
+      format = colFormat(digits = 0, separators = TRUE),
+      resizable = TRUE
+    ),
+    # height = 800,
+    highlight = T,
+    wrap = T, 
+    pagination = F
+  )
+  
+  return(out)
+  
+}
+
+# alluvial plot function, for HMPU targets
+# https://www.data-to-viz.com/graph/sankey.html
+alluvout2 <- function(datin, fluccs){
+  
+  clp <- fluccs %>%
+    pull(HMPU_TARGETS) %>% 
+    unique
+  
+  sumdat <- datin %>% 
+    rename(Acres = value) %>% 
+    mutate(
+      target = gsub(',\\s[0-9]+$', '', target),
+      source = gsub(',\\s[0-9]+$', '', source)
+    ) %>% 
+    group_by(target, source) %>% 
+    summarise(Acres = sum(Acres), .groups = 'drop') %>% 
+    mutate(
+      target = factor(target, levels = clp),
+      source = factor(source, levels = clp)
+    ) %>% 
+    na.omit() %>% 
+    group_by(target, source) %>% 
+    summarise(Acres = sum(Acres), .groups = 'drop') %>% 
+    select(source = source, target = target, value = Acres) %>% 
+    data.frame(stringsAsFactors = F)
+  sumdat$target <- paste(sumdat$target, " ", sep="")
+  
+  # From these flows we need to create a node data frame: it lists every entities involved in the flow
+  nodes <- data.frame(name=c(as.character(sumdat$source), as.character(sumdat$target)) %>% unique())
+  
+  # With networkD3, connection must be provided using id, not using real name like in the links dataframe.. So we need to reformat it.
+  sumdat$IDsource=match(sumdat$source, nodes$name)-1 
+  sumdat$IDtarget=match(sumdat$target, nodes$name)-1
+  
+  out <- sankeyNetwork(Links = sumdat, Nodes = nodes,
+                       Source = "IDsource", Target = "IDtarget",
+                       Value = "value", NodeID = "name", height = 1200, width = 800,
+                       sinksRight=FALSE, units = 'acres', nodeWidth=40, fontSize=13, nodePadding=5)
+  
+  return(out)
+
+}
+
+# reactable change table for year pairs
+cmprctfun2 <- function(datin, fluccs, yrsel = '1990'){
+  
+  clp <- fluccs %>%
+    pull(HMPU_TARGETS) %>% 
+    unique
+  browser()
+  sumdat <- datin %>% 
+    select(target, source, Acres = value) %>% 
+    mutate(
+      target = gsub(',\\s[0-9]+$', '', target),
+      source = gsub(',\\s[0-9]+$', '', source)
+    ) %>% 
+    group_by(target, source) %>% 
+    summarise(Acres = sum(Acres)) %>% 
+    ungroup %>% 
+    mutate(
+      target = factor(target, levels = clp),
+      source = factor(source, levels = clp)
+    ) %>% 
+    na.omit() %>% 
+    group_by(target, source) %>% 
+    summarise(Acres = sum(Acres)) %>% 
+    ungroup %>% 
+    rename(
+      source = source, 
+      target = target, 
+      value = Acres
+    ) %>% 
+    mutate(
+      target = factor(target, levels = sort(levels(target))),
+      source = factor(source, levels = sort(levels(source)))
+    )
+  
+  totab <- sumdat %>% 
+    complete(source, target) %>% 
+    spread(target, value, fill = 0) %>% 
+    mutate(Total = select_if(., is.numeric) %>% rowSums)
+  
+  srcttl <- select(totab, source, Total)
+  trgttl <- totab %>% 
+    select(-source, -Total) %>% 
+    gather('Category', 'Total') %>% 
+    mutate(Category = factor(Category, levels = levels(totab$source))) %>% 
+    group_by(Category) %>% 
+    summarise(Total = sum(Total)) %>% 
+    ungroup
+  
+  totab <- totab %>%
+    mutate(
+      chg = trgttl$Total - Total,
+      chgper = 100 * chg / Total, 
+      chgper = ifelse(is.na(chgper), 0, chgper),
+      chg = as.character(round(chg, 0)),
+      chgper = as.character(round(chgper, 1)), 
+      Total = as.character(round(Total, 0))
+    )
+  
+  jsfun <- JS("function(rowInfo) {
+    var value = rowInfo.row.chg
+    if (value >= 0) {
+      var color = '#008000E6'
+    } else if (value < 0) {
+      var color = '#e00000E6'
+    } 
+    return { color: color, fontWeight: 'bold' }
+    }"
+  ) 
+  
+  sticky_style <- list(position = "sticky", left = 0, background = "#fff", zIndex = 1,
+                       borderRight = "1px solid #eee", fontWeight = 'bold')
+  
+  out <- reactable(
+    totab, 
+    columns = list(
+      source = colDef(
+        name = '', 
+        footer = '2017 total', 
+        minWidth = 250,
+        style = sticky_style,
+        headerStyle = sticky_style, 
+        footerStyle = sticky_style
+      ), 
+      Total = colDef(
+        name = paste0(yrsel, ' total'), 
+        style = list(fontWeight = 'bold'),
+        class = "sticky right-col-3a",
+        headerClass = "sticky right-col-3a",
+        footerClass = "sticky right-col-3a"
+      ),
+      chg = colDef(
+        name = paste0(yrsel, '-2017 change (acres)'), 
+        style = jsfun,
+        class = "sticky right-col-2a",
+        headerClass = "sticky right-col-2a",
+        footerClass = "sticky right-col-2a"
+      ), 
+      chgper = colDef(
+        name = '% change',
+        style = jsfun,
+        format = colFormat(suffix = '%', digits = 0),
+        class = "sticky right-col-1",
+        headerClass = "sticky right-col-1",
+        footerClass = "sticky right-col-1"
+      )
     ),
     defaultColDef = colDef(
       footerStyle = list(fontWeight = "bold"),

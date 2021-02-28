@@ -30,7 +30,7 @@ source('R/funcs.R')
 # writeLines(styles, 'styles.css')
 ```
 
-Values in each table are acreage, unless noted otherwise. 
+Values in each table are acres.
 
 ## Group
 

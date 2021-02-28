@@ -1,0 +1,129 @@
+---
+output: 
+  html_document
+css: styles.css
+runtime: shiny
+---
+  
+# Land use changes {.tabset}
+  
+```{r setup, message = F, warning = F, results = 'hide', echo = FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = F, message = F, echo = F, fig.path = 'figs/', dev.args = list(family = 'serif'), fig.path = 'figures/')
+
+library(tidyverse)
+library(forcats)
+library(foreign)
+library(reactable)
+library(here)
+library(networkD3)
+library(shiny)
+
+data(chgdat)
+data(acres)
+dat <- acres
+
+fluccs <- read.csv('data/FLUCCShabsclass.csv')
+
+source('R/funcs.R')
+
+yrs <- unique(acres$name) %>% 
+  sort %>% 
+  .[1:(length(.) - 1)]
+
+# # style file
+# styles <- readLines('https://raw.githubusercontent.com/tbep-tech/css-styling/master/styles.css')
+# writeLines(styles, 'styles.css')
+```
+
+Values in each table are acres.
+
+```{r reactives}
+# trend table
+trndtab <- reactive({
+  
+  # inputs
+  yrsel <- input$yrsel
+
+  sums <- dat %>%
+    spread(name, Acres, fill = NA) %>% 
+    rename(chgyr = !!yrsel) %>% 
+    mutate(
+      chg = `2017` -  chgyr,
+      chgper = 100 * (`2017` - chgyr) / chgyr
+    ) %>% 
+    rename(val = HMPU_TARGETS)
+  
+  names(sums)[names(sums) == 'chgyr'] <- yrsel
+
+  out <- rct_fun(sums, 'Category', grpby = F, yrsel = yrsel)
+  
+  return(out)
+  
+})
+
+# change data by year pairs
+chgdatpr <- reactive({
+  
+  # inputs
+  yrsel <- input$yrsel
+  
+  out <- chgdat %>% 
+    filter(grepl(paste0('\\,\\s', yrsel, '$'), source))
+  
+  return(out)
+  
+})
+
+# change analysis plot
+alluplo <- reactive({
+  
+  # inputs
+  datin <- chgdatpr()
+
+  out <- alluvout2(datin, fluccs)
+  
+  return(out)
+  
+})
+
+# change analysis table
+cmptab <- reactive({
+  
+  # inputs
+  datin <- chgdatpr()
+  yrsel <- input$yrsel
+  
+  out <- cmprctfun2(datin, fluccs, yrsel)
+  
+  return(out)
+  
+})
+```
+
+```{r}
+selectInput('yrsel', 'Select year comparison', choices = yrs, selected = yrs[1])
+```
+
+
+##### `r renderText(input$yrsel)` to 2017 change {.tabset .tabset-pills} 
+
+###### Long-term trends
+
+```{r}
+output$trndtab <- renderReactable(trndtab())
+reactableOutput('trndtab')
+```
+
+###### Change analysis plot 
+
+```{r}
+output$alluplo <- renderSankeyNetwork(alluplo())
+sankeyNetworkOutput('alluplo', height = '900px')
+```
+
+###### Change analysis table
+
+```{r}
+output$cmptab <- renderReactable(cmptab())
+reactableOutput('cmptab')
+```

@@ -10,6 +10,11 @@ library(foreign)
 
 download.file('https://github.com/tbep-tech/hmpu-workflow/raw/master/data/FLUCCShabsclass.csv', 'data/FLUCCShabsclass.csv')
 
+# acreage estimates -------------------------------------------------------
+
+# data are downloaded from another repo, the datasets used to create the file are too large to keep with an app
+download.file('https://github.com/tbep-tech/hmpu-workflow/raw/master/data/acres.RData', 'data/acres.RData')
+
 # change analysis data ----------------------------------------------------
 
 # data are downloaded from another repo, the datasets used to create the file are too large to keep with an app
@@ -21,7 +26,6 @@ chgdatold <- read.dbf('T:/05_GIS/HMPU/comp1990v2017/TBEP_dbasinsg_LU9017.dbf')
 save(chgdatold, file = 'data/chgdatold.RData', compress = 'xz')
 
 # old lulc workflow -------------------------------------------------------
-
 
 # https://data-swfwmd.opendata.arcgis.com/search?groupIds=880fc95697ce45c3a8b078bb752faf40
 urls <- list(
