@@ -45,7 +45,7 @@ sums <- dat %>%
     chgper = 100 * (`2017` - `1990`) / `1990`
   )
 
-rct_fun(sums, 'Group', grpby = F)
+lulcrct_fun(sums, 'Group', grpby = F)
 ```
 
 ##### 1990 to 2017 change {.tabset .tabset-pills} 
@@ -79,7 +79,7 @@ sums <- dat %>%
     chgper = 100 * (`2017` - `1990`) / `1990`
   )
 
-rct_fun(sums, 'Class')
+lulcrct_fun(sums, 'Class')
 ```
 
 ##### 1990 to 2017 change {.tabset .tabset-pills} 
@@ -116,7 +116,7 @@ sums <- dat %>%
     chgper = 100 * (`2017` - `1990`) / `1990`
   )
 
-rct_fun(sums, 'Habitat')
+lulcrct_fun(sums, 'Habitat')
 ```
 
 ##### 1990 to 2017 change  {.tabset .tabset-pills}

@@ -20,65 +20,93 @@ library(shiny)
 
 data(chgdat)
 data(acres)
+data(subtacres)
 dat <- acres
+subtdat <- subtacres
 
 fluccs <- read.csv('data/FLUCCShabsclass.csv')
 
 source('R/funcs.R')
 
-yrs <- unique(acres$name) %>% 
+# land use years
+yrs1 <- unique(dat$name) %>% 
   sort %>% 
   .[1:(length(.) - 1)]
 
+# subtidal years
+yrs2 <- unique(subtdat$name) %>% 
+  sort %>% 
+  .[1:(length(.) - 1)]
+ 
 # # style file
 # styles <- readLines('https://raw.githubusercontent.com/tbep-tech/css-styling/master/styles.css')
 # writeLines(styles, 'styles.css')
 ```
 
-Values in each table are acres.
-
 ```{r reactives}
 # trend table
-trndtab <- reactive({
+trndtab1 <- reactive({
   
   # inputs
-  yrsel <- input$yrsel
+  yrsel1 <- input$yrsel1
 
   sums <- dat %>%
     spread(name, Acres, fill = NA) %>% 
-    rename(chgyr = !!yrsel) %>% 
+    rename(chgyr = !!yrsel1) %>% 
     mutate(
       chg = `2017` -  chgyr,
       chgper = 100 * (`2017` - chgyr) / chgyr
     ) %>% 
     rename(val = HMPU_TARGETS)
   
-  names(sums)[names(sums) == 'chgyr'] <- yrsel
+  names(sums)[names(sums) == 'chgyr'] <- yrsel1
 
-  out <- rct_fun(sums, 'Category', grpby = F, yrsel = yrsel)
+  out <- lulcrct_fun(sums, 'Category', grpby = F, yrsel = yrsel1)
   
   return(out)
   
 })
 
-# change data by year pairs
-chgdatpr <- reactive({
+# trend table
+trndtab2 <- reactive({
   
   # inputs
-  yrsel <- input$yrsel
+  yrsel2 <- input$yrsel2
+
+  sums <- subtdat %>%
+    spread(name, Acres, fill = 0) %>% 
+    rename(chgyr = !!yrsel2) %>% 
+    mutate(
+      chg = `2018` -  chgyr,
+      chgper = 100 * (`2018` - chgyr) / chgyr
+    ) %>% 
+    rename(val = HMPU_TARGETS)
+  
+  names(sums)[names(sums) == 'chgyr'] <- yrsel2
+
+  out <- subtrct_fun(sums, 'Category', yrsel = yrsel2)
+  
+  return(out)
+  
+})
+# change data by year pairs
+chgdatpr1 <- reactive({
+  
+  # inputs
+  yrsel1 <- input$yrsel1
   
   out <- chgdat %>% 
-    filter(grepl(paste0('\\,\\s', yrsel, '$'), source))
+    filter(grepl(paste0('\\,\\s', yrsel1, '$'), source))
   
   return(out)
   
 })
 
 # change analysis plot
-alluplo <- reactive({
+alluplo1 <- reactive({
   
   # inputs
-  datin <- chgdatpr()
+  datin <- chgdatpr1()
 
   out <- alluvout2(datin, fluccs)
   
@@ -87,43 +115,60 @@ alluplo <- reactive({
 })
 
 # change analysis table
-cmptab <- reactive({
+cmptab1 <- reactive({
   
   # inputs
   datin <- chgdatpr()
-  yrsel <- input$yrsel
+  yrsel1 <- input$yrsel1
   
-  out <- cmprctfun2(datin, fluccs, yrsel)
+  out <- cmprctfun2(datin, fluccs, yrsel1)
   
   return(out)
   
 })
 ```
 
+## Supratidal, intertidal
+
 ```{r}
-selectInput('yrsel', 'Select year comparison', choices = yrs, selected = yrs[1])
+selectInput('yrsel1', 'Select year comparison', choices = yrs1, selected = yrs1[1])
 ```
 
-
-##### `r renderText(input$yrsel)` to 2017 change {.tabset .tabset-pills} 
+##### `r renderText(input$yrsel1)` to 2017 change {.tabset .tabset-pills} 
 
 ###### Long-term trends
 
 ```{r}
-output$trndtab <- renderReactable(trndtab())
-reactableOutput('trndtab')
+output$trndtab1 <- renderReactable(trndtab1())
+reactableOutput('trndtab1')
 ```
 
 ###### Change analysis plot 
 
 ```{r}
-output$alluplo <- renderSankeyNetwork(alluplo())
-sankeyNetworkOutput('alluplo', height = '900px')
+output$alluplo1 <- renderSankeyNetwork(alluplo1())
+sankeyNetworkOutput('alluplo1', height = '900px')
 ```
 
 ###### Change analysis table
 
 ```{r}
-output$cmptab <- renderReactable(cmptab())
-reactableOutput('cmptab')
+output$cmptab1 <- renderReactable(cmptab1())
+reactableOutput('cmptab1')
 ```
+
+## Subtidal
+
+```{r}
+selectInput('yrsel2', 'Select year comparison', choices = yrs2, selected = yrs2[1])
+```
+
+##### `r renderText(input$yrsel2)` to 2018 change {.tabset .tabset-pills} 
+
+###### Long-term trends
+
+```{r}
+output$trndtab2 <- renderReactable(trndtab2())
+reactableOutput('trndtab2')
+```
+

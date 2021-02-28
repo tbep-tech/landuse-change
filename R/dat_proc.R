@@ -15,6 +15,11 @@ download.file('https://github.com/tbep-tech/hmpu-workflow/raw/master/data/FLUCCS
 # data are downloaded from another repo, the datasets used to create the file are too large to keep with an app
 download.file('https://github.com/tbep-tech/hmpu-workflow/raw/master/data/acres.RData', 'data/acres.RData')
 
+# subtidal acres ----------------------------------------------------------
+
+# data are downloaded from another repo, the datasets used to create the file are too large to keep with an app
+download.file('https://github.com/tbep-tech/hmpu-workflow/raw/master/data/subtacres.RData', 'data/subtacres.RData')
+
 # change analysis data ----------------------------------------------------
 
 # data are downloaded from another repo, the datasets used to create the file are too large to keep with an app

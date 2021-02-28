@@ -1,5 +1,5 @@
 # reactable table function
-rct_fun <- function(sums, colnm, grpby = T, yrsel = '1990'){
+lulcrct_fun <- function(sums, colnm, grpby = T, yrsel = '1990'){
   
   sticky_style <- list(position = "sticky", left = 0, background = "#fff", zIndex = 1,
                        borderRight = "1px solid #eee")
@@ -87,6 +87,67 @@ rct_fun <- function(sums, colnm, grpby = T, yrsel = '1990'){
       highlight = T,
       wrap = F
     )
+  
+  return(out)
+  
+}
+
+# reactable table function for subtidal
+subtrct_fun <- function(sums, colnm, yrsel = '1988'){
+  
+  sticky_style <- list(position = "sticky", left = 0, background = "#fff", zIndex = 1,
+                       borderRight = "1px solid #eee")
+  
+  jsfun <- JS("function(rowInfo) {
+    var value = rowInfo.row.chg
+    if (value >= 0) {
+      var color = '#008000E6'
+    } else if (value < 0) {
+      var color = '#e00000E6'
+    } 
+    return { color: color, fontWeight: 'bold' }
+    }"
+  )
+
+  out <- reactable(
+    sums, 
+    columns = list(
+      val = colDef(name = colnm, footer = 'Total', minWidth = 240, class = 'sticky left-col-1-bord', headerClass = 'sticky left-col-1-bord', footerClass = 'sticky left-col-1-bord'), 
+      `1988` = colDef(footer = sum(sums$`1988`), aggregate = 'sum'),
+      `1990` = colDef(footer = sum(sums$`1990`), aggregate = 'sum'),
+      `1992` = colDef(footer = sum(sums$`1992`), aggregate = 'sum'),
+      `1994` = colDef(footer = sum(sums$`1994`), aggregate = 'sum'),
+      `1996` = colDef(footer = sum(sums$`1996`), aggregate = 'sum'),
+      `1999` = colDef(footer = sum(sums$`1999`), aggregate = 'sum'),
+      `2001` = colDef(footer = sum(sums$`2001`), aggregate = 'sum'),
+      `2004` = colDef(footer = sum(sums$`2004`), aggregate = 'sum'),
+      `2006` = colDef(footer = sum(sums$`2006`), aggregate = 'sum'),
+      `2008` = colDef(footer = sum(sums$`2008`), aggregate = 'sum'),
+      `2010` = colDef(footer = sum(sums$`2010`), aggregate = 'sum'),
+      `2012` = colDef(footer = sum(sums$`2012`), aggregate = 'sum'),
+      `2014` = colDef(footer = sum(sums$`2014`), aggregate = 'sum'),
+      `2016` = colDef(footer = sum(sums$`2016`), aggregate = 'sum'),
+      `2018` = colDef(footer = sum(sums$`2018`), aggregate = 'sum'),
+      chg = colDef(name = paste0(yrsel, '-2018 change'), minWidth = 140,
+                   style = jsfun, class = 'sticky right-col-2', headerClass = 'sticky right-col-2', footerClass = 'sticky right-col-2'
+      ), 
+      chgper = colDef(name = '% change', minWidth = 85,
+                      style = jsfun,
+                      format = colFormat(suffix = '%', digits = 0), 
+                      class = 'sticky right-col-1', headerClass = 'sticky right-col-1', footerClass = 'sticky right-col-1'
+                      
+      )
+    ),
+    defaultColDef = colDef(
+      footerStyle = list(fontWeight = "bold"),
+      format = colFormat(digits = 0, separators = TRUE), 
+      minWidth = 75, resizable = TRUE
+    ),
+    defaultPageSize = nrow(sums),
+    showPageSizeOptions = F,
+    highlight = T,
+    wrap = F
+  )
   
   return(out)
   
@@ -312,7 +373,7 @@ cmprctfun2 <- function(datin, fluccs, yrsel = '1990'){
   clp <- fluccs %>%
     pull(HMPU_TARGETS) %>% 
     unique
-  browser()
+  
   sumdat <- datin %>% 
     select(target, source, Acres = value) %>% 
     mutate(
