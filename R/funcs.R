@@ -368,11 +368,14 @@ alluvout2 <- function(datin, fluccs){
 }
 
 # reactable change table for year pairs
-cmprctfun2 <- function(datin, fluccs, yrsel = '1990'){
+cmprctfun2 <- function(datin, fluccs, yrsel = '1990', maxyr = '2017', subt = F){
   
   clp <- fluccs %>%
     pull(HMPU_TARGETS) %>% 
     unique
+  
+  if(subt) 
+    clp <- c('Open Water', 'Oyster Bars', 'Seagrasses', 'Restorable', 'Tidal Flats')
   
   sumdat <- datin %>% 
     select(target, source, Acres = value) %>% 
@@ -444,7 +447,7 @@ cmprctfun2 <- function(datin, fluccs, yrsel = '1990'){
     columns = list(
       source = colDef(
         name = '', 
-        footer = '2017 total', 
+        footer = paste0(maxyr, ' total'), 
         minWidth = 250,
         style = sticky_style,
         headerStyle = sticky_style, 
@@ -458,7 +461,7 @@ cmprctfun2 <- function(datin, fluccs, yrsel = '1990'){
         footerClass = "sticky right-col-3a"
       ),
       chg = colDef(
-        name = paste0(yrsel, '-2017 change (acres)'), 
+        name = paste0(yrsel, '-', maxyr, ' change (acres)'), 
         style = jsfun,
         class = "sticky right-col-2a",
         headerClass = "sticky right-col-2a",

@@ -21,20 +21,19 @@ library(shiny)
 data(chgdat)
 data(acres)
 data(subtacres)
-dat <- acres
-subtdat <- subtacres
+data(subtchgdat)
 
 fluccs <- read.csv('data/FLUCCShabsclass.csv')
 
 source('R/funcs.R')
 
 # land use years
-yrs1 <- unique(dat$name) %>% 
+yrs1 <- unique(acres$name) %>% 
   sort %>% 
   .[1:(length(.) - 1)]
 
 # subtidal years
-yrs2 <- unique(subtdat$name) %>% 
+yrs2 <- unique(subtacres$name) %>% 
   sort %>% 
   .[1:(length(.) - 1)]
  
@@ -50,7 +49,7 @@ trndtab1 <- reactive({
   # inputs
   yrsel1 <- input$yrsel1
 
-  sums <- dat %>%
+  sums <- acres %>%
     spread(name, Acres, fill = NA) %>% 
     rename(chgyr = !!yrsel1) %>% 
     mutate(
@@ -73,7 +72,7 @@ trndtab2 <- reactive({
   # inputs
   yrsel2 <- input$yrsel2
 
-  sums <- subtdat %>%
+  sums <- subtacres %>%
     spread(name, Acres, fill = 0) %>% 
     rename(chgyr = !!yrsel2) %>% 
     mutate(
@@ -89,8 +88,9 @@ trndtab2 <- reactive({
   return(out)
   
 })
+
 # change data by year pairs
-chgdatpr1 <- reactive({
+chgdatpr <- reactive({
   
   # inputs
   yrsel1 <- input$yrsel1
@@ -102,11 +102,36 @@ chgdatpr1 <- reactive({
   
 })
 
+# subtidal change data by year pairs
+subtchgdatpr <- reactive({
+  
+  # inputs
+  yrsel2 <- input$yrsel2
+  
+  out <- subtchgdat %>% 
+    filter(grepl(paste0('\\,\\s', yrsel2, '$'), source))
+  
+  return(out)
+  
+})
+
 # change analysis plot
 alluplo1 <- reactive({
   
   # inputs
-  datin <- chgdatpr1()
+  datin <- chgdatpr()
+
+  out <- alluvout2(datin, fluccs)
+  
+  return(out)
+  
+})
+
+# subtidal change analysis plot
+alluplo2 <- reactive({
+  
+  # inputs
+  datin <- subtchgdatpr()
 
   out <- alluvout2(datin, fluccs)
   
@@ -121,7 +146,20 @@ cmptab1 <- reactive({
   datin <- chgdatpr()
   yrsel1 <- input$yrsel1
   
-  out <- cmprctfun2(datin, fluccs, yrsel1)
+  out <- cmprctfun2(datin, fluccs, yrsel1, '2017')
+  
+  return(out)
+  
+})
+
+# subtidal change analysis table
+cmptab2 <- reactive({
+  
+  # inputs
+  datin <- subtchgdatpr()
+  yrsel2 <- input$yrsel2
+  
+  out <- cmprctfun2(datin, fluccs, yrsel2, '2018', subt = T)
   
   return(out)
   
@@ -172,3 +210,16 @@ output$trndtab2 <- renderReactable(trndtab2())
 reactableOutput('trndtab2')
 ```
 
+###### Change analysis plot
+
+```{r}
+output$alluplo2 <- renderSankeyNetwork(alluplo2())
+sankeyNetworkOutput('alluplo2', height = '900px')
+```
+
+###### Change analysis table
+
+```{r}
+output$cmptab2 <- renderReactable(cmptab2())
+reactableOutput('cmptab2')
+```

@@ -25,6 +25,11 @@ download.file('https://github.com/tbep-tech/hmpu-workflow/raw/master/data/subtac
 # data are downloaded from another repo, the datasets used to create the file are too large to keep with an app
 download.file('https://github.com/tbep-tech/hmpu-workflow/raw/master/data/chgdat.RData', 'data/chgdat.RData')
 
+# subtidal change analysis data -------------------------------------------
+
+# data are downloaded from another repo, the datasets used to create the file are too large to keep with an app
+download.file('https://github.com/tbep-tech/hmpu-workflow/raw/master/data/subtchgdat.RData', 'data/subtchgdat.RData')
+
 # old change analysis -----------------------------------------------------
 
 chgdatold <- read.dbf('T:/05_GIS/HMPU/comp1990v2017/TBEP_dbasinsg_LU9017.dbf')
