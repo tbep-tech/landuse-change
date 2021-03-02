@@ -18,12 +18,11 @@ library(here)
 library(networkD3)
 library(shiny)
 
-data(chgdat)
-data(acres)
-data(subtacres)
-data(subtchgdat)
-
-fluccs <- read.csv('data/FLUCCShabsclass.csv')
+load(url("https://github.com/tbep-tech/hmpu-workflow/raw/master/data/acres.RData"))
+load(url("https://github.com/tbep-tech/hmpu-workflow/raw/master/data/subtacres.RData"))
+load(url("https://github.com/tbep-tech/hmpu-workflow/raw/master/data/chgdat.RData"))
+load(url("https://github.com/tbep-tech/hmpu-workflow/raw/master/data/subtchgdat.RData"))
+fluccs <- read.csv('https://github.com/tbep-tech/hmpu-workflow/raw/master/data/FLUCCShabsclass.csv')
 
 source('R/funcs.R')
 
