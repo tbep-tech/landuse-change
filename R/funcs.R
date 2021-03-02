@@ -6,9 +6,9 @@ lulcrct_fun <- function(sums, colnm, grpby = T, yrsel = '1990'){
   
   jsfun <- JS("function(rowInfo) {
     var value = rowInfo.row.chg
-    if (value >= 0) {
+    if (parseInt(value) >= 0) {
       var color = '#008000E6'
-    } else if (value < 0) {
+    } else if (parseInt(value) < 0) {
       var color = '#e00000E6'
     } 
     return { color: color, fontWeight: 'bold' }
@@ -46,7 +46,7 @@ lulcrct_fun <- function(sums, colnm, grpby = T, yrsel = '1990'){
         )
       ),
       defaultColDef = colDef(
-        footerStyle = list(fontWeight = "bold"),
+        footerStyle = list(fontWeight = "bold", separators = T),
         format = colFormat(digits = 0, separators = TRUE), 
         resizable = F
       ),
@@ -78,7 +78,7 @@ lulcrct_fun <- function(sums, colnm, grpby = T, yrsel = '1990'){
         )
       ),
       defaultColDef = colDef(
-        footerStyle = list(fontWeight = "bold"),
+        footerStyle = list(fontWeight = "bold", separators = T),
         format = colFormat(digits = 0, separators = TRUE), 
         minWidth = 75, resizable = TRUE
       ),
@@ -92,42 +92,33 @@ lulcrct_fun <- function(sums, colnm, grpby = T, yrsel = '1990'){
   
 }
 
-# reactable table function for subtidal
-subtrct_fun <- function(sums, colnm, yrsel = '1988'){
+# reactable table function that works for supra/intertidal and subtidal
+lngtrmtab_fun <- function(sums, colnm, yrsel = '1988', firstwidth = 240){
   
   sticky_style <- list(position = "sticky", left = 0, background = "#fff", zIndex = 1,
                        borderRight = "1px solid #eee")
-  
+
   jsfun <- JS("function(rowInfo) {
     var value = rowInfo.row.chg
-    if (value >= 0) {
+    if (parseInt(value) >= 0) {
       var color = '#008000E6'
-    } else if (value < 0) {
+    } else if (parseInt(value) < 0) {
       var color = '#e00000E6'
     } 
     return { color: color, fontWeight: 'bold' }
     }"
   )
 
+  totab <- sums %>% 
+    mutate(
+      chg = formatC(round(chg, 0), format = "d", big.mark = ","),
+      chgper = as.character(round(chgper, 0))
+    )
+  
   out <- reactable(
-    sums, 
+    totab, 
     columns = list(
-      val = colDef(name = colnm, footer = 'Total', minWidth = 240, class = 'sticky left-col-1-bord', headerClass = 'sticky left-col-1-bord', footerClass = 'sticky left-col-1-bord'), 
-      `1988` = colDef(footer = sum(sums$`1988`), aggregate = 'sum'),
-      `1990` = colDef(footer = sum(sums$`1990`), aggregate = 'sum'),
-      `1992` = colDef(footer = sum(sums$`1992`), aggregate = 'sum'),
-      `1994` = colDef(footer = sum(sums$`1994`), aggregate = 'sum'),
-      `1996` = colDef(footer = sum(sums$`1996`), aggregate = 'sum'),
-      `1999` = colDef(footer = sum(sums$`1999`), aggregate = 'sum'),
-      `2001` = colDef(footer = sum(sums$`2001`), aggregate = 'sum'),
-      `2004` = colDef(footer = sum(sums$`2004`), aggregate = 'sum'),
-      `2006` = colDef(footer = sum(sums$`2006`), aggregate = 'sum'),
-      `2008` = colDef(footer = sum(sums$`2008`), aggregate = 'sum'),
-      `2010` = colDef(footer = sum(sums$`2010`), aggregate = 'sum'),
-      `2012` = colDef(footer = sum(sums$`2012`), aggregate = 'sum'),
-      `2014` = colDef(footer = sum(sums$`2014`), aggregate = 'sum'),
-      `2016` = colDef(footer = sum(sums$`2016`), aggregate = 'sum'),
-      `2018` = colDef(footer = sum(sums$`2018`), aggregate = 'sum'),
+      val = colDef(name = colnm, footer = 'Total', minWidth = firstwidth, class = 'sticky left-col-1-bord', headerClass = 'sticky left-col-1-bord', footerClass = 'sticky left-col-1-bord'), 
       chg = colDef(name = paste0(yrsel, '-2018 change'), minWidth = 140,
                    style = jsfun, class = 'sticky right-col-2', headerClass = 'sticky right-col-2', footerClass = 'sticky right-col-2'
       ), 
@@ -139,9 +130,16 @@ subtrct_fun <- function(sums, colnm, yrsel = '1988'){
       )
     ),
     defaultColDef = colDef(
+      footer = function(values){
+        if(!is.numeric(values))
+          return()
+        
+        formatC(round(sum(values), 0), format= "d", big.mark = ",")
+        
+      },
       footerStyle = list(fontWeight = "bold"),
       format = colFormat(digits = 0, separators = TRUE), 
-      minWidth = 75, resizable = TRUE
+      minWidth = 80, resizable = TRUE
     ),
     defaultPageSize = nrow(sums),
     showPageSizeOptions = F,
@@ -256,9 +254,9 @@ cmprctfun <- function(chgdat, lkup, var = 'HMPU_DESCRIPTOR'){
   
   jsfun <- JS("function(rowInfo) {
     var value = rowInfo.row.chg
-    if (value >= 0) {
+    if (parseInt(value) >= 0) {
       var color = '#008000E6'
-    } else if (value < 0) {
+    } else if (parseInt(value) < 0) {
       var color = '#e00000E6'
     } 
     return { color: color, fontWeight: 'bold' }
@@ -374,8 +372,12 @@ cmprctfun2 <- function(datin, fluccs, yrsel = '1990', maxyr = '2017', subt = F){
     pull(HMPU_TARGETS) %>% 
     unique
   
+  subtclp <- c('Open Water', 'Oyster Bars', 'Restorable', 'Seagrasses', 'Tidal Flats', 'other')
   if(subt) 
-    clp <- c('Open Water', 'Oyster Bars', 'Seagrasses', 'Restorable', 'Tidal Flats')
+    clp <- subtclp
+  
+  if(!subt)
+    clp <- c(sort(c('Coastal Uplands', clp[!clp %in% subtclp])), 'other')
   
   sumdat <- datin %>% 
     select(target, source, Acres = value) %>% 
@@ -398,11 +400,7 @@ cmprctfun2 <- function(datin, fluccs, yrsel = '1990', maxyr = '2017', subt = F){
       source = source, 
       target = target, 
       value = Acres
-    ) %>% 
-    mutate(
-      target = factor(target, levels = sort(levels(target))),
-      source = factor(source, levels = sort(levels(source)))
-    )
+    ) 
   
   totab <- sumdat %>% 
     complete(source, target) %>% 
@@ -423,16 +421,16 @@ cmprctfun2 <- function(datin, fluccs, yrsel = '1990', maxyr = '2017', subt = F){
       chg = trgttl$Total - Total,
       chgper = 100 * chg / Total, 
       chgper = ifelse(is.na(chgper), 0, chgper),
-      chg = as.character(round(chg, 0)),
-      chgper = as.character(round(chgper, 1)), 
-      Total = as.character(round(Total, 0))
+      chg = as.character(formatC(round(chg, 0), format = "d", big.mark = ",")),
+      chgper = as.character(round(chgper, 0)),
+      Total = as.character(formatC(round(Total, 0), format = "d", big.mark = ","))
     )
   
   jsfun <- JS("function(rowInfo) {
     var value = rowInfo.row.chg
-    if (value >= 0) {
+    if (parseInt(value) >= 0) {
       var color = '#008000E6'
-    } else if (value < 0) {
+    } else if (parseInt(value) < 0) {
       var color = '#e00000E6'
     } 
     return { color: color, fontWeight: 'bold' }
@@ -482,7 +480,7 @@ cmprctfun2 <- function(datin, fluccs, yrsel = '1990', maxyr = '2017', subt = F){
         if(!is.numeric(values))
           return()
         
-        round(sum(values), 0)
+        formatC(round(sum(values), 0), format= "d", big.mark = ",")
         
       },
       format = colFormat(digits = 0, separators = TRUE),
