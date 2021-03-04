@@ -340,10 +340,10 @@ alluvout2 <- function(datin, fluccs){
     ) %>% 
     group_by(target, source) %>% 
     summarise(Acres = sum(Acres), .groups = 'drop') %>% 
-    mutate(
-      target = factor(target, levels = clp),
-      source = factor(source, levels = clp)
-    ) %>% 
+    # mutate(
+    #   target = factor(target, levels = clp),
+    #   source = factor(source, levels = clp)
+    # ) %>% 
     na.omit() %>% 
     group_by(target, source) %>% 
     summarise(Acres = sum(Acres), .groups = 'drop') %>% 
@@ -393,7 +393,7 @@ cmprctfun2 <- function(datin, fluccs, yrsel = '1990', maxyr = '2017', subt = F){
     mutate(
       target = factor(target, levels = clp),
       source = factor(source, levels = clp)
-    ) %>% 
+    ) %>%
     na.omit() %>% 
     group_by(target, source) %>% 
     summarise(Acres = sum(Acres)) %>% 
@@ -413,7 +413,7 @@ cmprctfun2 <- function(datin, fluccs, yrsel = '1990', maxyr = '2017', subt = F){
   trgttl <- totab %>% 
     select(-source, -Total) %>% 
     gather('Category', 'Total') %>% 
-    mutate(Category = factor(Category, levels = levels(totab$source))) %>% 
+    mutate(Category = factor(Category, levels = levels(totab$source))) %>%
     group_by(Category) %>% 
     summarise(Total = sum(Total)) %>% 
     ungroup
