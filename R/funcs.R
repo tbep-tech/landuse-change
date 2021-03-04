@@ -93,7 +93,7 @@ lulcrct_fun <- function(sums, colnm, grpby = T, yrsel = '1990'){
 }
 
 # reactable table function that works for supra/intertidal and subtidal
-lngtrmtab_fun <- function(sums, colnm, yrsel = '1988', firstwidth = 240){
+lngtrmtab_fun <- function(sums, colnm, yrsel = '1988', topyr = '2018', firstwidth = 240){
   
   sticky_style <- list(position = "sticky", left = 0, background = "#fff", zIndex = 1,
                        borderRight = "1px solid #eee")
@@ -119,7 +119,7 @@ lngtrmtab_fun <- function(sums, colnm, yrsel = '1988', firstwidth = 240){
     totab, 
     columns = list(
       val = colDef(name = colnm, footer = 'Total', minWidth = firstwidth, class = 'sticky left-col-1-bord', headerClass = 'sticky left-col-1-bord', footerClass = 'sticky left-col-1-bord'), 
-      chg = colDef(name = paste0(yrsel, '-2018 change'), minWidth = 140,
+      chg = colDef(name = paste0(yrsel, '-', topyr, ' change'), minWidth = 140,
                    style = jsfun, class = 'sticky right-col-2', headerClass = 'sticky right-col-2', footerClass = 'sticky right-col-2'
       ), 
       chgper = colDef(name = '% change', minWidth = 85,
@@ -372,7 +372,7 @@ cmprctfun2 <- function(datin, fluccs, yrsel = '1990', maxyr = '2017', subt = F){
     pull(HMPU_TARGETS) %>% 
     unique
   
-  subtclp <- c('Open Water', 'Oyster Bars', 'Restorable', 'Seagrasses', 'Tidal Flats', 'other')
+  subtclp <- c('Hard Bottom', 'Open Water', 'Oyster Bars', 'Restorable', 'Seagrasses', 'Tidal Flats', 'other')
   if(subt) 
     clp <- subtclp
   

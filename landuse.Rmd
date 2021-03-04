@@ -59,7 +59,7 @@ trndtab1 <- reactive({
   
   names(sums)[names(sums) == 'chgyr'] <- yrsel1
 
-  out <- lngtrmtab_fun(sums, 'Category', yrsel = yrsel1)
+  out <- lngtrmtab_fun(sums, 'Category', yrsel = yrsel1, topyr = '2017')
   
   return(out)
   
@@ -82,7 +82,7 @@ trndtab2 <- reactive({
   
   names(sums)[names(sums) == 'chgyr'] <- yrsel2
 
-  out <- lngtrmtab_fun(sums, 'Category', yrsel = yrsel2)
+  out <- lngtrmtab_fun(sums, 'Category', yrsel = yrsel2, topyr = '2018')
   
   return(out)
   
