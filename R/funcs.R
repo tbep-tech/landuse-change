@@ -426,7 +426,7 @@ cmprctfun2 <- function(datin, fluccs, yrsel = '1990', maxyr = '2017', subt = F){
       chg = as.character(formatC(round(chg, 0), format = "d", big.mark = ",")),
       chgper = as.character(round(chgper, 0)),
       Total = as.character(formatC(round(Total, 0), format = "d", big.mark = ",")),
-      source = as.characer(source)
+      source = as.character(source)
     )
   
   jsfun <- JS("function(rowInfo) {
