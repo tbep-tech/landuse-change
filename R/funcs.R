@@ -340,10 +340,6 @@ alluvout2 <- function(datin, fluccs){
     ) %>% 
     group_by(target, source) %>% 
     summarise(Acres = sum(Acres), .groups = 'drop') %>% 
-    # mutate(
-    #   target = factor(target, levels = clp),
-    #   source = factor(source, levels = clp)
-    # ) %>% 
     na.omit() %>% 
     group_by(target, source) %>% 
     summarise(Acres = sum(Acres), .groups = 'drop') %>% 
@@ -406,6 +402,7 @@ cmprctfun2 <- function(datin, fluccs, yrsel = '1990', maxyr = '2017', subt = F){
   
   totab <- sumdat %>% 
     complete(source, target) %>% 
+    mutate_if(is.factor, as.character) %>% 
     spread(target, value, fill = 0) %>% 
     mutate(Total = select_if(., is.numeric) %>% rowSums)
   
@@ -413,7 +410,6 @@ cmprctfun2 <- function(datin, fluccs, yrsel = '1990', maxyr = '2017', subt = F){
   trgttl <- totab %>% 
     select(-source, -Total) %>% 
     gather('Category', 'Total') %>% 
-    mutate(Category = factor(Category, levels = levels(totab$source))) %>%
     group_by(Category) %>% 
     summarise(Total = sum(Total)) %>% 
     ungroup
@@ -428,6 +424,10 @@ cmprctfun2 <- function(datin, fluccs, yrsel = '1990', maxyr = '2017', subt = F){
       Total = as.character(formatC(round(Total, 0), format = "d", big.mark = ",")),
       source = as.character(source)
     )
+  
+  # arrange columns, rows by character (factors screws up shiny server)
+  totab <- totab[rank(clp, totab$source), ]
+  totab <- totab[, c('source', clp, 'Total', 'chg', 'chgper')]
   
   jsfun <- JS("function(rowInfo) {
     var value = rowInfo.row.chg
