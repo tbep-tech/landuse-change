@@ -328,8 +328,10 @@ alluvout2 <- function(datin, fluccs){
   
   clp <- fluccs %>%
     pull(HMPU_TARGETS) %>% 
-    unique
-  
+    unique %>% 
+    c('Coastal Uplands', .) %>% 
+    sort
+
   sumdat <- datin %>% 
     rename(Acres = value) %>% 
     mutate(
@@ -377,7 +379,7 @@ cmprctfun2 <- function(datin, fluccs, yrsel = '1990', maxyr = '2017', subt = F){
     clp <- subtclp
   
   if(!subt)
-    clp <- c(sort(c('Coastal Uplands', clp[!clp %in% subtclp])), 'other')
+    clp <- c(sort(c('Coastal Uplands', 'Restorable', 'Open Water', clp[!clp %in% subtclp])), 'other')
   
   sumdat <- datin %>% 
     select(target, source, Acres = value) %>% 
@@ -423,7 +425,8 @@ cmprctfun2 <- function(datin, fluccs, yrsel = '1990', maxyr = '2017', subt = F){
       chgper = ifelse(is.na(chgper), 0, chgper),
       chg = as.character(formatC(round(chg, 0), format = "d", big.mark = ",")),
       chgper = as.character(round(chgper, 0)),
-      Total = as.character(formatC(round(Total, 0), format = "d", big.mark = ","))
+      Total = as.character(formatC(round(Total, 0), format = "d", big.mark = ",")),
+      source = as.characer(source)
     )
   
   jsfun <- JS("function(rowInfo) {
