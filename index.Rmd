@@ -77,14 +77,14 @@ trndtab2 <- reactive({
     spread(name, Acres, fill = 0) %>% 
     rename(chgyr = !!yrsel2) %>% 
     mutate(
-      chg = `2018` -  chgyr,
-      chgper = 100 * (`2018` - chgyr) / chgyr
+      chg = `2020` -  chgyr,
+      chgper = 100 * (`2020` - chgyr) / chgyr
     ) %>% 
     rename(val = HMPU_TARGETS)
   
   names(sums)[names(sums) == 'chgyr'] <- yrsel2
 
-  out <- lngtrmtab_fun(sums, 'Category', yrsel = yrsel2, topyr = '2018')
+  out <- lngtrmtab_fun(sums, 'Category', yrsel = yrsel2, topyr = '2020')
   
   return(out)
   
@@ -160,7 +160,7 @@ cmptab2 <- reactive({
   datin <- subtchgdatpr()
   yrsel2 <- input$yrsel2
   
-  out <- cmprctfun2(datin, fluccs, yrsel2, '2018', subt = T)
+  out <- cmprctfun2(datin, fluccs, yrsel2, '2020', subt = T)
   
   return(out)
   
@@ -202,7 +202,7 @@ reactableOutput('cmptab1')
 selectInput('yrsel2', 'Select year comparison', choices = yrs2, selected = yrs2[1])
 ```
 
-##### `r renderText(input$yrsel2)` to 2018 change {.tabset .tabset-pills} 
+##### `r renderText(input$yrsel2)` to 2020 change {.tabset .tabset-pills} 
 
 ###### Long-term trends
 
