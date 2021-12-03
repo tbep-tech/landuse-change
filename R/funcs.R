@@ -111,8 +111,8 @@ chgfun <- function(datin, yrsel){
         chg = chgyr2 - chgyr1,
         chgper = 100 * (chgyr2 - chgyr1) / chgyr1, 
         chgicon = case_when(
-          chgper > 0 ~ 'arrow-circle-up', 
-          chgper <= 0 ~ 'arrow-circle-down'
+          chgper >= 0 ~ 'arrow-circle-up', 
+          chgper < 0 ~ 'arrow-circle-down'
         ), 
         chgcols = case_when(
           chgper >= 0 ~ '#008000E6', 
