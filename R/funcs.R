@@ -131,7 +131,7 @@ chgfun <- function(datin, yrsel){
         chg = NA, 
         chgper = NA, 
         chgicon = '', 
-        chgcols = ''
+        chgcols = 'black'
       ) %>% 
       rename(val = HMPU_TARGETS)
   }
