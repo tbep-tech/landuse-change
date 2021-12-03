@@ -143,7 +143,7 @@ cmptab1 <- reactive({
   datin <- chgdatpr()
   yrsel1 <- input$yrsel1
   
-  out <- cmprctfun2(datin, fluccs, yrsel1, '2020')
+  out <- cmprctfun2(datin, fluccs, yrsel1[1], '2020')
   
   return(out)
   
@@ -156,7 +156,7 @@ cmptab2 <- reactive({
   datin <- subtchgdatpr()
   yrsel2 <- input$yrsel2
   
-  out <- cmprctfun2(datin, fluccs, yrsel2, '2020', subt = T)
+  out <- cmprctfun2(datin, fluccs, yrsel2[1], '2020', subt = T)
   
   return(out)
   
