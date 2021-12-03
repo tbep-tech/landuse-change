@@ -92,8 +92,56 @@ lulcrct_fun <- function(sums, colnm, grpby = T, yrsel = '1990'){
   
 }
 
+# change estimate as percentages for supra or subtidal, used in lngtrmtab_fun
+chgfun <- function(datin, yrsel){
+  
+  # yrs in input data
+  yrs <- datin$name %>% 
+    unique
+
+  datin <- datin %>% 
+    spread(name, Acres, fill = 0)
+  
+  # calc diffs if both yrsel present
+  if(sum(unique(yrsel) %in% yrs) == 2){
+    out <- datin %>%
+      rename(chgyr1 = !!yrsel[1]) %>% 
+      rename(chgyr2 = !!yrsel[2]) %>% 
+      mutate(
+        chg = chgyr2 - chgyr1,
+        chgper = 100 * (chgyr2 - chgyr1) / chgyr1, 
+        chgicon = case_when(
+          chgper > 0 ~ 'arrow-circle-up', 
+          chgper <= 0 ~ 'arrow-circle-down'
+        ), 
+        chgcols = case_when(
+          chgper >= 0 ~ '#008000E6', 
+          chgper < 0 ~ '#e00000E6'
+        )
+      ) %>% 
+      rename(val = HMPU_TARGETS)
+    names(out)[names(out) == 'chgyr1'] <- yrsel[1]
+    names(out)[names(out) == 'chgyr2'] <- yrsel[2]
+  }
+  
+  # NA if yrsel is equal or missing a yrsel
+  if(yrsel[1] == yrsel[2] | any(!yrsel %in% yrs)){
+    out <- datin %>% 
+      mutate(
+        chg = NA, 
+        chgper = NA, 
+        chgicon = '', 
+        chgcols = ''
+      ) %>% 
+      rename(val = HMPU_TARGETS)
+  }
+  
+  return(out)
+  
+}
+
 # reactable table function that works for supra/intertidal and subtidal
-lngtrmtab_fun <- function(sums, colnm, yrsel = '1988', topyr = '2018', firstwidth = 240){
+lngtrmtab_fun <- function(datin, colnm, yrsel, firstwidth = 240){
   
   sticky_style <- list(position = "sticky", left = 0, background = "#fff", zIndex = 1,
                        borderRight = "1px solid #eee")
@@ -109,6 +157,9 @@ lngtrmtab_fun <- function(sums, colnm, yrsel = '1988', topyr = '2018', firstwidt
     }"
   )
 
+  # get change summary
+  sums <- chgfun(datin, yrsel)
+
   totab <- sums %>% 
     mutate(
       chg = formatC(round(chg, 0), format = "d", big.mark = ","),
@@ -118,14 +169,18 @@ lngtrmtab_fun <- function(sums, colnm, yrsel = '1988', topyr = '2018', firstwidt
   out <- reactable(
     totab, 
     columns = list(
+      chgicon = colDef(show = F), 
+      chgcols = colDef(show = F),
       val = colDef(name = colnm, footer = 'Total', minWidth = firstwidth, class = 'sticky left-col-1-bord', headerClass = 'sticky left-col-1-bord', footerClass = 'sticky left-col-1-bord'), 
-      chg = colDef(name = paste0(yrsel, '-', topyr, ' change'), minWidth = 140,
+      chg = colDef(name = paste0(yrsel[1], '-', yrsel[2], ' change'), minWidth = 140,
                    style = jsfun, class = 'sticky right-col-2', headerClass = 'sticky right-col-2', footerClass = 'sticky right-col-2'
       ), 
       chgper = colDef(name = '% change', minWidth = 85,
                       style = jsfun,
                       format = colFormat(suffix = '%', digits = 0), 
-                      class = 'sticky right-col-1', headerClass = 'sticky right-col-1', footerClass = 'sticky right-col-1'
+                      align = 'right', 
+                      class = 'sticky right-col-1', headerClass = 'sticky right-col-1', footerClass = 'sticky right-col-1', 
+                      cell = icon_sets(totab, icon_ref = 'chgicon', icon_position = 'right', icon_color_ref = 'chgcols')
                       
       )
     ),

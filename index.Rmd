@@ -19,6 +19,8 @@ library(reactable)
 library(here)
 library(networkD3)
 library(shiny)
+library(shinyWidgets)
+library(reactablefmtr)
 
 load(url("https://github.com/tbep-tech/hmpu-workflow/raw/master/data/acres.RData"))
 load(url("https://github.com/tbep-tech/hmpu-workflow/raw/master/data/subtacres.RData"))
@@ -31,13 +33,17 @@ source('R/funcs.R')
 # land use years
 yrs1 <- unique(acres$name) %>% 
   sort %>% 
-  .[1:(length(.) - 1)]
+  .[1:(length(.))]
 
 # subtidal years
 yrs2 <- unique(subtacres$name) %>% 
   sort %>% 
-  .[1:(length(.) - 1)]
+  .[1:(length(.))]
  
+# for error handling
+topyr1 <- max(yrs1)
+topyr2 <- max(yrs2)
+
 # # style file
 # styles <- readLines('https://raw.githubusercontent.com/tbep-tech/css-styling/master/styles.css')
 # writeLines(styles, 'styles.css')
@@ -49,19 +55,8 @@ trndtab1 <- reactive({
   
   # inputs
   yrsel1 <- input$yrsel1
-
-  sums <- acres %>%
-    spread(name, Acres, fill = NA) %>% 
-    rename(chgyr = !!yrsel1) %>% 
-    mutate(
-      chg = `2020` -  chgyr,
-      chgper = 100 * (`2020` - chgyr) / chgyr
-    ) %>% 
-    rename(val = HMPU_TARGETS)
   
-  names(sums)[names(sums) == 'chgyr'] <- yrsel1
-
-  out <- lngtrmtab_fun(sums, 'Category', yrsel = yrsel1, topyr = '2020')
+  out <- lngtrmtab_fun(acres, 'Category', yrsel = yrsel1)
   
   return(out)
   
@@ -73,18 +68,7 @@ trndtab2 <- reactive({
   # inputs
   yrsel2 <- input$yrsel2
 
-  sums <- subtacres %>%
-    spread(name, Acres, fill = 0) %>% 
-    rename(chgyr = !!yrsel2) %>% 
-    mutate(
-      chg = `2020` -  chgyr,
-      chgper = 100 * (`2020` - chgyr) / chgyr
-    ) %>% 
-    rename(val = HMPU_TARGETS)
-  
-  names(sums)[names(sums) == 'chgyr'] <- yrsel2
-
-  out <- lngtrmtab_fun(sums, 'Category', yrsel = yrsel2, topyr = '2020')
+  out <- lngtrmtab_fun(subtacres, 'Category', yrsel = yrsel2)
   
   return(out)
   
@@ -96,8 +80,14 @@ chgdatpr <- reactive({
   # inputs
   yrsel1 <- input$yrsel1
   
+  validate(
+    need(yrsel1[2] == topyr1, paste('Change analysis requires', topyr1, 'as second year'))
+  )
+  
+  req(yrsel1[1] != yrsel1[2])
+  
   out <- chgdat %>% 
-    filter(grepl(paste0('\\,\\s', yrsel1, '$'), source))
+    filter(grepl(paste0('\\,\\s', yrsel1[1], '$'), source))
   
   return(out)
   
@@ -109,8 +99,14 @@ subtchgdatpr <- reactive({
   # inputs
   yrsel2 <- input$yrsel2
   
+  validate(
+    need(yrsel2[2] == topyr2, paste('Change analysis requires', topyr2, 'as second year'))
+  )
+  
+  req(yrsel2[1] != yrsel2[2])
+  
   out <- subtchgdat %>% 
-    filter(grepl(paste0('\\,\\s', yrsel2, '$'), source))
+    filter(grepl(paste0('\\,\\s', yrsel2[1], '$'), source))
   
   return(out)
   
@@ -178,10 +174,10 @@ Each tab includes three sub-tabs: long-term trends, change analysis plot, and ch
 ## Supratidal/intertidal
 
 ```{r}
-selectInput('yrsel1', 'Select year comparison', choices = yrs1, selected = yrs1[1])
+sliderTextInput('yrsel1', 'Select year comparison', choices = yrs1, grid = T, width = '600px', selected = c(yrs1[1], rev(yrs1)[1]))
 ```
 
-##### `r renderText(input$yrsel1)` to 2020 change {.tabset .tabset-pills} 
+##### `r renderText(input$yrsel1[1])` to `r renderText(input$yrsel1[2])` change {.tabset .tabset-pills} 
 
 ###### Long-term trends
 
@@ -207,10 +203,10 @@ reactableOutput('cmptab1')
 ## Subtidal
 
 ```{r}
-selectInput('yrsel2', 'Select year comparison', choices = yrs2, selected = yrs2[1])
+sliderTextInput('yrsel2', 'Select year comparison', choices = yrs2, grid = T, width = '600px', selected = c(yrs2[1], rev(yrs2)[1]))
 ```
 
-##### `r renderText(input$yrsel2)` to 2020 change {.tabset .tabset-pills} 
+##### `r renderText(input$yrsel2[1])` to `r renderText(input$yrsel2[2])` change {.tabset .tabset-pills} 
 
 ###### Long-term trends
 
