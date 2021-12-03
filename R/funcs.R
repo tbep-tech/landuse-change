@@ -474,6 +474,14 @@ cmprctfun2 <- function(datin, fluccs, yrsel = '1990', maxyr = '2017', subt = F){
       chg = trgttl$Total - Total,
       chgper = 100 * chg / Total, 
       chgper = ifelse(is.na(chgper), 0, chgper),
+      chgicon = case_when(
+        chgper >= 0 ~ 'arrow-circle-up', 
+        chgper < 0 ~ 'arrow-circle-down'
+      ), 
+      chgcols = case_when(
+        chgper >= 0 ~ '#008000E6', 
+        chgper < 0 ~ '#e00000E6'
+      ),
       chg = as.character(formatC(round(chg, 0), format = "d", big.mark = ",")),
       chgper = as.character(round(chgper, 0)),
       Total = as.character(formatC(round(Total, 0), format = "d", big.mark = ",")),
@@ -482,7 +490,7 @@ cmprctfun2 <- function(datin, fluccs, yrsel = '1990', maxyr = '2017', subt = F){
   
   # arrange columns, rows by character (factors screws up shiny server)
   totab <- totab[rank(clp, totab$source), ]
-  totab <- totab[, c('source', clp, 'Total', 'chg', 'chgper')]
+  totab <- totab[, c('source', clp, 'Total', 'chg', 'chgper', 'chgicon', 'chgcols')]
   
   jsfun <- JS("function(rowInfo) {
     var value = rowInfo.row.chg
@@ -501,6 +509,8 @@ cmprctfun2 <- function(datin, fluccs, yrsel = '1990', maxyr = '2017', subt = F){
   out <- reactable(
     totab, 
     columns = list(
+      chgicon = colDef(show = F), 
+      chgcols = colDef(show= F),
       source = colDef(
         name = '', 
         footer = paste0(maxyr, ' total'), 
@@ -526,10 +536,12 @@ cmprctfun2 <- function(datin, fluccs, yrsel = '1990', maxyr = '2017', subt = F){
       chgper = colDef(
         name = '% change',
         style = jsfun,
+        align = 'right',
         format = colFormat(suffix = '%', digits = 0),
         class = "sticky right-col-1",
         headerClass = "sticky right-col-1",
-        footerClass = "sticky right-col-1"
+        footerClass = "sticky right-col-1",
+        cell = icon_sets(totab, icon_ref = 'chgicon', icon_position = 'right', icon_color_ref = 'chgcols')
       )
     ),
     defaultColDef = colDef(
