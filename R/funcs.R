@@ -26,7 +26,7 @@ lulcrct_fun <- function(sums, colnm, grpby = T, yrsel = '1990'){
           footer = 'Total', 
           minWidth = 200, 
           class = 'sticky left-col-2', headerClass = 'sticky left-col-2', footerClass = 'sticky left-col-2'
-          ), 
+        ), 
         `1990` = colDef(footer = sum(sums$`1990`), aggregate = 'sum'),
         `1995` = colDef(footer = sum(sums$`1995`), aggregate = 'sum'),
         `1999` = colDef(footer = sum(sums$`1999`), aggregate = 'sum'),
@@ -98,7 +98,7 @@ chgfun <- function(datin, yrsel){
   # yrs in input data
   yrs <- datin$name %>% 
     unique
-
+  
   datin <- datin %>% 
     spread(name, Acres, fill = 0)
   
@@ -115,8 +115,10 @@ chgfun <- function(datin, yrsel){
           chgper < 0 ~ 'arrow-circle-down'
         ), 
         chgcols = case_when(
-          chgper >= 0 ~ '#008000E6', 
-          chgper < 0 ~ '#e00000E6'
+          chgper >= 0 & HMPU_TARGETS != 'Developed' ~ '#008000E6', 
+          chgper < 0 & HMPU_TARGETS != 'Developed' ~ '#e00000E6',
+          chgper >= 0 & HMPU_TARGETS == 'Developed' ~ '#e00000E6', 
+          chgper < 0 & HMPU_TARGETS == 'Developed' ~ '#008000E6'
         )
       ) %>% 
       rename(val = HMPU_TARGETS)
@@ -145,26 +147,21 @@ lngtrmtab_fun <- function(datin, colnm, yrsel, firstwidth = 240){
   
   sticky_style <- list(position = "sticky", left = 0, background = "#fff", zIndex = 1,
                        borderRight = "1px solid #eee")
-
-  jsfun <- JS("function(rowInfo) {
-    var value = rowInfo.row.chg
-    if (parseInt(value) >= 0) {
-      var color = '#008000E6'
-    } else if (parseInt(value) < 0) {
-      var color = '#e00000E6'
-    } 
-    return { color: color, fontWeight: 'bold' }
-    }"
-  )
-
+  
   # get change summary
   sums <- chgfun(datin, yrsel)
-
+  
   totab <- sums %>% 
     mutate(
       chg = formatC(round(chg, 0), format = "d", big.mark = ","),
       chgper = as.character(round(chgper, 0))
     )
+  
+  # get color from totab, but has to be indexed and include all args
+  stylefunc <- function(value, index, name) {
+    col <- totab[index, 'chgcols'][[1]]
+    list(color = col, fontWeight = 'bold')
+  } 
   
   out <- reactable(
     totab, 
@@ -173,10 +170,10 @@ lngtrmtab_fun <- function(datin, colnm, yrsel, firstwidth = 240){
       chgcols = colDef(show = F),
       val = colDef(name = colnm, footer = 'Total', minWidth = firstwidth, class = 'sticky left-col-1-bord', headerClass = 'sticky left-col-1-bord', footerClass = 'sticky left-col-1-bord'), 
       chg = colDef(name = paste0(yrsel[1], '-', yrsel[2], ' change'), minWidth = 140,
-                   style = jsfun, class = 'sticky right-col-2', headerClass = 'sticky right-col-2', footerClass = 'sticky right-col-2'
+                   style = stylefunc, class = 'sticky right-col-2', headerClass = 'sticky right-col-2', footerClass = 'sticky right-col-2'
       ), 
       chgper = colDef(name = '% change', minWidth = 85,
-                      style = jsfun,
+                      style = stylefunc,
                       format = colFormat(suffix = '%', digits = 0), 
                       align = 'right', 
                       class = 'sticky right-col-1', headerClass = 'sticky right-col-1', footerClass = 'sticky right-col-1', 
@@ -242,9 +239,9 @@ alluvout <- function(chgdat, lkup, var = 'HMPU_DESCRIPTOR', height = 1200){
   sumdat$IDtarget=match(sumdat$target, nodes$name)-1
   
   out <- sankeyNetwork(Links = sumdat, Nodes = nodes,
-                Source = "IDsource", Target = "IDtarget",
-                Value = "value", NodeID = "name", height = height, width = 800,
-                sinksRight=FALSE, units = 'acres', nodeWidth=40, fontSize=13, nodePadding=5)
+                       Source = "IDsource", Target = "IDtarget",
+                       Value = "value", NodeID = "name", height = height, width = 800,
+                       sinksRight=FALSE, units = 'acres', nodeWidth=40, fontSize=13, nodePadding=5)
   
   return(out)
   
@@ -257,7 +254,7 @@ cmprctfun <- function(chgdat, lkup, var = 'HMPU_DESCRIPTOR'){
     select(!!var, FLUCCSCODE) %>% 
     deframe %>%
     map(as.character)
-
+  
   sumdat <- chgdat %>% 
     select(FLUCCS17, FLUCCS90, Acres) %>% 
     group_by(FLUCCS17, FLUCCS90) %>% 
@@ -331,21 +328,21 @@ cmprctfun <- function(chgdat, lkup, var = 'HMPU_DESCRIPTOR'){
         style = sticky_style,
         headerStyle = sticky_style, 
         footerStyle = sticky_style
-        ), 
+      ), 
       Total = colDef(
         name = '1990 total', 
         style = list(fontWeight = 'bold'),
         class = "sticky right-col-3a",
         headerClass = "sticky right-col-3a",
         footerClass = "sticky right-col-3a"
-        ),
+      ),
       chg = colDef(
         name = '1990-2017 change (acres)', 
         style = jsfun,
         class = "sticky right-col-2a",
         headerClass = "sticky right-col-2a",
         footerClass = "sticky right-col-2a"
-        ), 
+      ), 
       chgper = colDef(
         name = '% change',
         style = jsfun,
@@ -353,7 +350,7 @@ cmprctfun <- function(chgdat, lkup, var = 'HMPU_DESCRIPTOR'){
         class = "sticky right-col-1",
         headerClass = "sticky right-col-1",
         footerClass = "sticky right-col-1"
-        )
+      )
     ),
     defaultColDef = colDef(
       footerStyle = list(fontWeight = "bold"),
@@ -386,7 +383,7 @@ alluvout2 <- function(datin, fluccs){
     unique %>% 
     c('Coastal Uplands', .) %>% 
     sort
-
+  
   sumdat <- datin %>% 
     rename(Acres = value) %>% 
     mutate(
@@ -415,7 +412,7 @@ alluvout2 <- function(datin, fluccs){
                        sinksRight=FALSE, units = 'acres', nodeWidth=40, fontSize=13, nodePadding=5)
   
   return(out)
-
+  
 }
 
 # reactable change table for year pairs
@@ -479,8 +476,10 @@ cmprctfun2 <- function(datin, fluccs, yrsel = '1990', maxyr = '2017', subt = F){
         chgper < 0 ~ 'arrow-circle-down'
       ), 
       chgcols = case_when(
-        chgper >= 0 ~ '#008000E6', 
-        chgper < 0 ~ '#e00000E6'
+        chgper >= 0 & source != 'Developed' ~ '#008000E6', 
+        chgper < 0 & source != 'Developed' ~ '#e00000E6',
+        chgper >= 0 & source == 'Developed' ~ '#e00000E6', 
+        chgper < 0 & source == 'Developed' ~ '#008000E6'
       ),
       chg = as.character(formatC(round(chg, 0), format = "d", big.mark = ",")),
       chgper = as.character(round(chgper, 0)),
@@ -492,16 +491,11 @@ cmprctfun2 <- function(datin, fluccs, yrsel = '1990', maxyr = '2017', subt = F){
   totab <- totab[rank(clp, totab$source), ]
   totab <- totab[, c('source', clp, 'Total', 'chg', 'chgper', 'chgicon', 'chgcols')]
   
-  jsfun <- JS("function(rowInfo) {
-    var value = rowInfo.row.chg
-    if (parseInt(value) >= 0) {
-      var color = '#008000E6'
-    } else if (parseInt(value) < 0) {
-      var color = '#e00000E6'
-    } 
-    return { color: color, fontWeight: 'bold' }
-    }"
-  ) 
+  # get color from totab, but has to be indexed and include all args
+  stylefunc <- function(value, index, name){
+    col <- totab[index, 'chgcols'][[1]]
+    list(color = col, fontWeight = 'bold')
+  } 
   
   sticky_style <- list(position = "sticky", left = 0, background = "#fff", zIndex = 1,
                        borderRight = "1px solid #eee", fontWeight = 'bold')
@@ -528,14 +522,14 @@ cmprctfun2 <- function(datin, fluccs, yrsel = '1990', maxyr = '2017', subt = F){
       ),
       chg = colDef(
         name = paste0(yrsel, '-', maxyr, ' change (acres)'), 
-        style = jsfun,
+        style = stylefunc,
         class = "sticky right-col-2a",
         headerClass = "sticky right-col-2a",
         footerClass = "sticky right-col-2a"
       ), 
       chgper = colDef(
         name = '% change',
-        style = jsfun,
+        style = stylefunc,
         align = 'right',
         format = colFormat(suffix = '%', digits = 0),
         class = "sticky right-col-1",
