@@ -118,7 +118,7 @@ alluplo1 <- reactive({
   # inputs
   datin <- chgdatpr()
 
-  out <- alluvout2(datin, fluccs)
+  out <- alluvout2(datin, fluccs, mrg = 130)
   
   return(out)
   
@@ -130,7 +130,7 @@ alluplo2 <- reactive({
   # inputs
   datin <- subtchgdatpr()
 
-  out <- alluvout2(datin, fluccs)
+  out <- alluvout2(datin, fluccs, mrg = 0)
   
   return(out)
   

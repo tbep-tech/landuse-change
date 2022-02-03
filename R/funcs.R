@@ -376,7 +376,7 @@ cmprctfun <- function(chgdat, lkup, var = 'HMPU_DESCRIPTOR'){
 
 # alluvial plot function, for HMPU targets
 # https://www.data-to-viz.com/graph/sankey.html
-alluvout2 <- function(datin, fluccs){
+alluvout2 <- function(datin, fluccs, mrg){
   
   clp <- fluccs %>%
     pull(HMPU_TARGETS) %>% 
@@ -397,7 +397,7 @@ alluvout2 <- function(datin, fluccs){
     summarise(Acres = sum(Acres), .groups = 'drop') %>% 
     select(source = source, target = target, value = Acres) %>% 
     data.frame(stringsAsFactors = F)
-  sumdat$target <- paste(sumdat$target, " ", sep="")
+  sumdat$source <- paste(sumdat$source, " ", sep="")
   
   # From these flows we need to create a node data frame: it lists every entities involved in the flow
   nodes <- data.frame(name=c(as.character(sumdat$source), as.character(sumdat$target)) %>% unique())
@@ -407,7 +407,7 @@ alluvout2 <- function(datin, fluccs){
   sumdat$IDtarget=match(sumdat$target, nodes$name)-1
 
   # custom color scale
-  cols <- c('#004F7E', '#00806E', '#427355', '#958984', '#5C4A42') %>% 
+  cols <- c('#004F7E', '#00806E', '#427355', '#958984', '#5C4A42', 'grey') %>% 
     colorRampPalette
   ncol <- sumdat[, c('source', 'target')] %>% 
     unlist() %>% 
@@ -419,10 +419,29 @@ alluvout2 <- function(datin, fluccs){
     paste(collapse = '", "') %>% 
     paste('d3.scaleOrdinal(["', ., '"])')
   
+  # margins for long text labels
+  mrgs <- list(0, mrg, 0, 0)
+  names(mrgs) <- c('top', 'right', 'bottom', 'left')
+                   
   out <- sankeyNetwork(Links = sumdat, Nodes = nodes,
                        Source = "IDsource", Target = "IDtarget", colourScale = colin,
                        Value = "value", NodeID = "name", height = 1000, width = 800,
-                       sinksRight=FALSE, units = 'acres', nodeWidth=50, fontSize=13, nodePadding=10)
+                       sinksRight=FALSE, units = 'acres', nodeWidth=50, fontSize=13, nodePadding=10, 
+                       margin = mrgs)
+  
+  out <- htmlwidgets::onRender(
+    out,
+    '
+    function(out,x){
+    // select all our node text
+    d3.select(out)
+    .selectAll(".node text")
+    .filter(function(d) { return d.name.endsWith(" "); })
+    .attr("x", x.options.nodeWidth - 55)
+    .attr("text-anchor", "end");
+    }
+    '
+  )
   
   return(out)
   
