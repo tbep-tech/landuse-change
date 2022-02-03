@@ -405,11 +405,24 @@ alluvout2 <- function(datin, fluccs){
   # With networkD3, connection must be provided using id, not using real name like in the links dataframe.. So we need to reformat it.
   sumdat$IDsource=match(sumdat$source, nodes$name)-1 
   sumdat$IDtarget=match(sumdat$target, nodes$name)-1
+
+  # custom color scale
+  cols <- c('#004F7E', '#00806E', '#427355', '#958984', '#5C4A42') %>% 
+    colorRampPalette
+  ncol <- sumdat[, c('source', 'target')] %>% 
+    unlist() %>% 
+    unique %>% 
+    gsub('\\s$', '', .) %>% 
+    unique %>% 
+    length()
+  colin <- cols(ncol) %>% 
+    paste(collapse = '", "') %>% 
+    paste('d3.scaleOrdinal(["', ., '"])')
   
   out <- sankeyNetwork(Links = sumdat, Nodes = nodes,
-                       Source = "IDsource", Target = "IDtarget",
-                       Value = "value", NodeID = "name", height = 1200, width = 800,
-                       sinksRight=FALSE, units = 'acres', nodeWidth=40, fontSize=13, nodePadding=5)
+                       Source = "IDsource", Target = "IDtarget", colourScale = colin,
+                       Value = "value", NodeID = "name", height = 1000, width = 800,
+                       sinksRight=FALSE, units = 'acres', nodeWidth=50, fontSize=13, nodePadding=10)
   
   return(out)
   
