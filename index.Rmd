@@ -21,6 +21,7 @@ library(networkD3)
 library(shiny)
 library(shinyWidgets)
 library(reactablefmtr)
+library(downloadthis)
 
 load(url("https://github.com/tbep-tech/hmpu-workflow/raw/master/data/acres.RData"))
 load(url("https://github.com/tbep-tech/hmpu-workflow/raw/master/data/subtacres.RData"))
@@ -29,6 +30,12 @@ load(url("https://github.com/tbep-tech/hmpu-workflow/raw/master/data/subtchgdat.
 fluccs <- read.csv('https://github.com/tbep-tech/hmpu-workflow/raw/master/data/FLUCCShabsclass.csv', stringsAsFactors = F)
 
 source('R/funcs.R')
+
+# for download
+acresdl <- acres %>% 
+  rename(year = name, category = HMPU_TARGETS)
+subtacresdl <- subtacres %>% 
+  rename(year = name, category = HMPU_TARGETS)
 
 # land use years
 yrs1 <- unique(acres$name) %>% 
@@ -228,3 +235,36 @@ sankeyNetworkOutput('alluplo2', height = '900px')
 output$cmptab2 <- renderReactable(cmptab2())
 reactableOutput('cmptab2')
 ```
+
+## Downloads
+
+Click the buttons below to download the annual estimates of land use acreage for supratidal/intertidal or subtidal habitats.  Each file includes the year of the estimate, the habitat category, and estimated acreages in long format. 
+
+```{r}
+
+column(12, 
+  column(6, 
+    download_this(
+      acresdl,
+      output_name = "supra_inter_acres",
+      output_extension = ".xlsx",
+      button_label = "Download supratidal/intertidal annual estimates",
+      button_type = "warning",
+      has_icon = TRUE,
+      icon = "fa fa-save"
+      )
+  ),
+  column(6, 
+    download_this(
+      subtacresdl,
+      output_name = "sub_acres",
+      output_extension = ".xlsx",
+      button_label = "Download subtidal annual estimates",
+      button_type = "warning",
+      has_icon = TRUE,
+      icon = "fa fa-save"
+      )
+  )
+)
+```
+
