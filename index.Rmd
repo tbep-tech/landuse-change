@@ -236,35 +236,35 @@ output$cmptab2 <- renderReactable(cmptab2())
 reactableOutput('cmptab2')
 ```
 
-<!-- ## Downloads -->
+## Downloads
 
-<!-- Click the buttons below to download the annual estimates of land use acreage for supratidal/intertidal or subtidal habitats.  Each file includes the year of the estimate, the habitat category, and estimated acreages in long format.  -->
+Click the buttons below to download the annual estimates of land use acreage for supratidal/intertidal or subtidal habitats.  Each file includes the year of the estimate, the habitat category, and estimated acreages in long format.
 
-<!-- ```{r} -->
+```{r}
 
-<!-- column(12,  -->
-<!--   column(6,  -->
-<!--     download_this( -->
-<!--       acresdl, -->
-<!--       output_name = "supra_inter_acres", -->
-<!--       output_extension = ".xlsx", -->
-<!--       button_label = "Download supratidal/intertidal annual estimates", -->
-<!--       button_type = "warning", -->
-<!--       has_icon = TRUE, -->
-<!--       icon = "fa fa-save" -->
-<!--       ) -->
-<!--   ), -->
-<!--   column(6,  -->
-<!--     download_this( -->
-<!--       subtacresdl, -->
-<!--       output_name = "sub_acres", -->
-<!--       output_extension = ".xlsx", -->
-<!--       button_label = "Download subtidal annual estimates", -->
-<!--       button_type = "warning", -->
-<!--       has_icon = TRUE, -->
-<!--       icon = "fa fa-save" -->
-<!--       ) -->
-<!--   ) -->
-<!-- ) -->
-<!-- ``` -->
+column(12,
+  column(6,
+    download_this(
+      acresdl,
+      output_name = "supra_inter_acres",
+      output_extension = ".csv",
+      button_label = "Download supratidal/intertidal annual estimates",
+      button_type = "warning",
+      has_icon = TRUE,
+      icon = "fa fa-save"
+      )
+  ),
+  column(6,
+    download_this(
+      subtacresdl,
+      output_name = "sub_acres",
+      output_extension = ".csv",
+      button_label = "Download subtidal annual estimates",
+      button_type = "warning",
+      has_icon = TRUE,
+      icon = "fa fa-save"
+      )
+  )
+)
+```
 
