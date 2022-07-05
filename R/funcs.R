@@ -450,6 +450,7 @@ alluvout2 <- function(datin, fluccs, mrg){
 # reactable change table for year pairs
 cmprctfun2 <- function(datin, fluccs, yrsel = '1990', maxyr = '2017', subt = F){
   
+  return(reactable(datin))
   clp <- fluccs %>%
     pull(HMPU_TARGETS) %>% 
     unique
@@ -532,63 +533,62 @@ cmprctfun2 <- function(datin, fluccs, yrsel = '1990', maxyr = '2017', subt = F){
   sticky_style <- list(position = "sticky", left = 0, background = "#fff", zIndex = 1,
                        borderRight = "1px solid #eee", fontWeight = 'bold')
   
-  # out <- reactable(
-  #   totab, 
-  #   columns = list(
-  #     chgicon = colDef(show = F), 
-  #     chgcols = colDef(show= F),
-  #     source = colDef(
-  #       name = '', 
-  #       footer = paste0(maxyr, ' total'), 
-  #       minWidth = 250,
-  #       style = sticky_style,
-  #       headerStyle = sticky_style, 
-  #       footerStyle = sticky_style
-  #     ), 
-  #     Total = colDef(
-  #       name = paste0(yrsel, ' total'), 
-  #       style = list(fontWeight = 'bold'),
-  #       class = "sticky right-col-3a",
-  #       headerClass = "sticky right-col-3a",
-  #       footerClass = "sticky right-col-3a"
-  #     ),
-  #     chg = colDef(
-  #       name = paste0(yrsel, '-', maxyr, ' change (acres)'), 
-  #       style = stylefunc,
-  #       class = "sticky right-col-2a",
-  #       headerClass = "sticky right-col-2a",
-  #       footerClass = "sticky right-col-2a"
-  #     ), 
-  #     chgper = colDef(
-  #       name = '% change',
-  #       style = stylefunc,
-  #       align = 'right',
-  #       format = colFormat(suffix = '%', digits = 0),
-  #       class = "sticky right-col-1",
-  #       headerClass = "sticky right-col-1",
-  #       footerClass = "sticky right-col-1",
-  #       cell = icon_sets(totab, icon_ref = 'chgicon', icon_position = 'right', icon_color_ref = 'chgcols')
-  #     )
-  #   ),
-  #   defaultColDef = colDef(
-  #     footerStyle = list(fontWeight = "bold"),
-  #     footer = function(values){
-  #       if(!is.numeric(values))
-  #         return()
-  #       
-  #       formatC(round(sum(values), 0), format= "d", big.mark = ",")
-  #       
-  #     },
-  #     format = colFormat(digits = 0, separators = TRUE),
-  #     resizable = TRUE
-  #   ),
-  #   # height = 800,
-  #   highlight = T,
-  #   wrap = T, 
-  #   pagination = F
-  # )
+  out <- reactable(
+    totab,
+    columns = list(
+      chgicon = colDef(show = F),
+      chgcols = colDef(show= F),
+      source = colDef(
+        name = '',
+        footer = paste0(maxyr, ' total'),
+        minWidth = 250,
+        style = sticky_style,
+        headerStyle = sticky_style,
+        footerStyle = sticky_style
+      ),
+      Total = colDef(
+        name = paste0(yrsel, ' total'),
+        style = list(fontWeight = 'bold'),
+        class = "sticky right-col-3a",
+        headerClass = "sticky right-col-3a",
+        footerClass = "sticky right-col-3a"
+      ),
+      chg = colDef(
+        name = paste0(yrsel, '-', maxyr, ' change (acres)'),
+        style = stylefunc,
+        class = "sticky right-col-2a",
+        headerClass = "sticky right-col-2a",
+        footerClass = "sticky right-col-2a"
+      ),
+      chgper = colDef(
+        name = '% change',
+        style = stylefunc,
+        align = 'right',
+        format = colFormat(suffix = '%', digits = 0),
+        class = "sticky right-col-1",
+        headerClass = "sticky right-col-1",
+        footerClass = "sticky right-col-1",
+        cell = icon_sets(totab, icon_ref = 'chgicon', icon_position = 'right', icon_color_ref = 'chgcols')
+      )
+    ),
+    defaultColDef = colDef(
+      footerStyle = list(fontWeight = "bold"),
+      footer = function(values){
+        if(!is.numeric(values))
+          return()
+
+        formatC(round(sum(values), 0), format= "d", big.mark = ",")
+
+      },
+      format = colFormat(digits = 0, separators = TRUE),
+      resizable = TRUE
+    ),
+    # height = 800,
+    highlight = T,
+    wrap = T,
+    pagination = F
+  )
   
-  out <- reactable(totab)
   return(out)
   
 }
