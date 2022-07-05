@@ -450,7 +450,6 @@ alluvout2 <- function(datin, fluccs, mrg){
 # reactable change table for year pairs
 cmprctfun2 <- function(datin, fluccs, yrsel = '1990', maxyr = '2017', subt = F){
   
-  return(reactable(datin))
   clp <- fluccs %>%
     pull(HMPU_TARGETS) %>% 
     unique
