@@ -454,7 +454,7 @@ cmprctfun2 <- function(datin, fluccs, yrsel = '1990', maxyr = '2017', subt = F){
     pull(HMPU_TARGETS) %>% 
     unique
 
-  subtclp <- c('Hard Bottom', 'Open Water', 'Oyster Bars', 'Restorable', 'Seagrasses', 'Tidal Flats', 'other')
+  subtclp <- c('Open Water', 'Oyster Bars', 'Restorable', 'Seagrasses', 'Tidal Flats', 'other')
   if(subt) 
     clp <- subtclp
   
@@ -494,10 +494,11 @@ cmprctfun2 <- function(datin, fluccs, yrsel = '1990', maxyr = '2017', subt = F){
   trgttl <- totab %>% 
     select(-source, -Total) %>% 
     gather('Category', 'Total') %>% 
+    dplyr::mutate(Category = factor(Category, levels = clp)) %>% 
     group_by(Category) %>% 
     summarise(Total = sum(Total)) %>% 
     ungroup
-  
+
   totab <- totab %>%
     mutate(
       chg = trgttl$Total - Total,
