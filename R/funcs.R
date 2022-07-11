@@ -453,7 +453,7 @@ cmprctfun2 <- function(datin, fluccs, yrsel = '1990', maxyr = '2017', subt = F){
   clp <- fluccs %>%
     pull(HMPU_TARGETS) %>% 
     unique
-  
+
   subtclp <- c('Hard Bottom', 'Open Water', 'Oyster Bars', 'Restorable', 'Seagrasses', 'Tidal Flats', 'other')
   if(subt) 
     clp <- subtclp
@@ -486,7 +486,7 @@ cmprctfun2 <- function(datin, fluccs, yrsel = '1990', maxyr = '2017', subt = F){
   
   totab <- sumdat %>% 
     complete(source, target) %>% 
-    mutate_if(is.factor, as.character) %>% 
+    # mutate_if(is.factor, as.character) %>% 
     spread(target, value, fill = 0) %>% 
     mutate(Total = select_if(., is.numeric) %>% rowSums)
   
@@ -518,10 +518,10 @@ cmprctfun2 <- function(datin, fluccs, yrsel = '1990', maxyr = '2017', subt = F){
       Total = as.character(formatC(round(Total, 0), format = "d", big.mark = ",")),
       source = as.character(source)
     )
-  
-  # arrange columns, rows by character (factors screws up shiny server)
-  totab <- totab[rank(clp, totab$source), ]
-  totab <- totab[, c('source', clp, 'Total', 'chg', 'chgper', 'chgicon', 'chgcols')]
+
+  # # arrange columns, rows by character (factors screws up shiny server)
+  # totab <- totab[rank(clp, totab$source), ]
+  # totab <- totab[, c('source', clp, 'Total', 'chg', 'chgper', 'chgicon', 'chgcols')]
   
   # get color from totab, but has to be indexed and include all args
   stylefunc <- function(value, index, name){
