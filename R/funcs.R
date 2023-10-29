@@ -203,6 +203,64 @@ lngtrmtab_fun <- function(datin, colnm, yrsel, firstwidth = 240){
   
 }
 
+# barplot function for acres over time
+barplot_fun <- function(datin, yrsel){
+  
+  # custom color scale
+  cols <- c('#004F7E', '#00806E', '#427355', '#958984', '#5C4A42', 'grey') %>% 
+    colorRampPalette
+
+  toplo <- datin %>% 
+    ungroup() %>% 
+    complete(name, HMPU_TARGETS, fill = list(Acres = 0)) %>% 
+    filter(name >= yrsel[1] & name <= yrsel[2]) %>% 
+    pivot_wider(names_from = 'HMPU_TARGETS', values_from = 'Acres')
+  
+  nhab <- length(unique(datin$HMPU_TARGETS))
+  
+  # supra/inter
+  if(nhab == 10){
+    
+    colsi <- cols(nhab)
+    
+    p <- plot_ly(toplo, x = ~name, y = ~`Salt Marshes`, name = "Salt Marshes", type = 'bar', marker = list(color = colsi[10])) %>% 
+      add_trace(y = ~`Salt Barrens`, name = "Salt Barrens", marker = list(color = colsi[9])) %>%
+      add_trace(y = ~`Restorable`, name = "Restorable", marker = list(color = colsi[8])) %>%
+      add_trace(y = ~`Open Water`, name = "Open Water", marker = list(color = colsi[7])) %>% 
+      add_trace(y = ~`Non-Forested Freshwater Wetlands`, name = "Non-Forested Freshwater Wetlands", marker = list(color = colsi[6])) %>% 
+      add_trace(y = ~`Native Uplands`, name = "Native Uplands", marker = list(color = colsi[5])) %>%
+      add_trace(y = ~`Mangrove Forests`, name = "Mangrove Forests", marker = list(color = colsi[4])) %>% 
+      add_trace(y = ~`Forested Freshwater Wetlands`, name = "Forested Freshwater Wetlands", marker = list(color = colsi[3])) %>% 
+      add_trace(y = ~`Developed`, name = "Developed", marker = list(color = colsi[2])) %>% 
+      add_trace(y = ~`Coastal Uplands`, name = "Coastal Uplands", marker = list(color = colsi[1]))
+      
+  }
+
+  # sub
+  if(nhab == 5){
+    
+    colsi <- cols(nhab)
+    
+    p <- plot_ly(toplo, x = ~name, y = ~`Tidal Flats`, name = "Tidal Flats", type = 'bar', marker = list(color = colsi[5])) %>% 
+      add_trace(y = ~`Seagrasses`, name = "Seagrasses", marker = list(color = colsi[3])) %>% 
+      add_trace(y = ~`Restorable`, name = "Restorable", marker = list(color = colsi[4])) %>% 
+      add_trace(y = ~`Oyster Bars`, name = "Oyster Bars", marker = list(color = colsi[2])) %>% 
+      add_trace(y = ~`Open Water`, name = "Open Water", marker = list(color = colsi[1]))
+    
+  }
+  
+  p <- p %>% 
+    layout(
+      yaxis = list(title = 'Acres'),
+      xaxis = list(title = NA),
+      barmode = 'stack'
+      )
+  
+  return(p)
+  
+}
+
+
 # alluvial plot function, for HMPU targets
 # https://www.data-to-viz.com/graph/sankey.html
 alluvout <- function(datin, fluccs, mrg){

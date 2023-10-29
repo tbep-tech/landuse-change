@@ -22,12 +22,13 @@ library(networkD3)
 library(shiny)
 library(shinyWidgets)
 library(reactablefmtr)
+library(plotly)
 
 data(acres)
 data(subtacres)
 data(chgdat)
 data(subtchgdat)
-data(flucss)
+data(fluccs)
 
 source('R/funcs.R')
 
@@ -119,13 +120,37 @@ subtchgdatpr <- reactive({
   
 })
 
+# bar plot
+barplot1 <- reactive({
+  
+  # inputs
+  yrsel1 <- input$yrsel1
+  
+  out <- barplot_fun(acres, yrsel1)
+  
+  return(out)
+    
+})
+
+# subtidal barplot
+barplot2 <- reactive({
+  
+  # inputs
+  yrsel2 <- input$yrsel2
+  
+  out <- barplot_fun(subtacres, yrsel2)
+  
+  return(out)
+  
+})
+
 # change analysis plot
 alluplo1 <- reactive({
   
   # inputs
   datin <- chgdatpr()
 
-  out <- alluvout2(datin, fluccs, mrg = 130)
+  out <- alluvout(datin, fluccs, mrg = 130)
   
   return(out)
   
@@ -137,7 +162,7 @@ alluplo2 <- reactive({
   # inputs
   datin <- subtchgdatpr()
 
-  out <- alluvout2(datin, fluccs, mrg = 0)
+  out <- alluvout(datin, fluccs, mrg = 0)
   
   return(out)
   
@@ -150,7 +175,7 @@ cmptab1 <- reactive({
   datin <- chgdatpr()
   yrsel1 <- input$yrsel1
   
-  out <- cmprctfun2(datin, fluccs, yrsel1[1], '2020')
+  out <- cmprctfun(datin, fluccs, yrsel1[1], '2020')
   
   return(out)
   
@@ -163,7 +188,7 @@ cmptab2 <- reactive({
   datin <- subtchgdatpr()
   yrsel2 <- input$yrsel2
   
-  out <- cmprctfun2(datin, fluccs, yrsel2[1], '2022', subt = T)
+  out <- cmprctfun(datin, fluccs, yrsel2[1], '2022', subt = T)
   
   return(out)
   
@@ -186,11 +211,18 @@ sliderTextInput('yrsel1', 'Select year comparison', choices = yrs1, grid = T, wi
 
 ##### `r renderText(input$yrsel1[1])` to `r renderText(input$yrsel1[2])` change {.tabset .tabset-pills} 
 
-###### Long-term trends
+###### Long-term trends table
 
 ```{r}
 output$trndtab1 <- renderReactable(trndtab1())
 reactableOutput('trndtab1')
+```
+
+###### Long-term trends barplot
+
+```{r}
+output$barplot1 <- renderPlotly(barplot1())
+plotlyOutput('barplot1')
 ```
 
 ###### Change analysis plot 
@@ -215,11 +247,18 @@ sliderTextInput('yrsel2', 'Select year comparison', choices = yrs2, grid = T, wi
 
 ##### `r renderText(input$yrsel2[1])` to `r renderText(input$yrsel2[2])` change {.tabset .tabset-pills} 
 
-###### Long-term trends
+###### Long-term trends table
 
 ```{r}
 output$trndtab2 <- renderReactable(trndtab2())
 reactableOutput('trndtab2')
+```
+
+###### Long-term trends barplot
+
+```{r}
+output$barplot2 <- renderPlotly(barplot2())
+plotlyOutput('barplot2')
 ```
 
 ###### Change analysis plot
