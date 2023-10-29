@@ -4,10 +4,11 @@ output:
     includes: 
       in_header: google-analytics.html
 css: styles.css
+title: "LAND USE CHANGES"
 runtime: shiny
 ---
   
-# LAND USE CHANGES {.tabset}
+# {.tabset}
   
 ```{r setup, message = F, warning = F, results = 'hide', echo = FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = F, message = F, echo = F, fig.path = 'figs/', dev.args = list(family = 'serif'), fig.path = 'figures/')
@@ -22,11 +23,11 @@ library(shiny)
 library(shinyWidgets)
 library(reactablefmtr)
 
-load(url("https://github.com/tbep-tech/hmpu-workflow/raw/master/data/acres.RData"))
-load(url("https://github.com/tbep-tech/hmpu-workflow/raw/master/data/subtacres.RData"))
-load(url("https://github.com/tbep-tech/hmpu-workflow/raw/master/data/chgdat.RData"))
-load(url("https://github.com/tbep-tech/hmpu-workflow/raw/master/data/subtchgdat.RData"))
-fluccs <- read.csv('https://github.com/tbep-tech/hmpu-workflow/raw/master/data/FLUCCShabsclass.csv', stringsAsFactors = F)
+data(acres)
+data(subtacres)
+data(chgdat)
+data(subtchgdat)
+data(flucss)
 
 source('R/funcs.R')
 
