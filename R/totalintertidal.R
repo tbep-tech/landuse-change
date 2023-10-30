@@ -42,7 +42,5 @@ calc <- function(acres, yrsel, intertid){
   
 }
 
-calc(acres, yrsel = c(1990, 2004))
-calc(acres, yrsel = c(2004, 2020))
-
+calc(acres, yrsel = c(1990, 2020))
 
