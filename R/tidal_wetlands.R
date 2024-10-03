@@ -1,9 +1,10 @@
 library(tidyverse)
 library(sf)
 library(tbeptools)
-library(mapview)
 library(here)
 library(patchwork)
+library(maptiles)
+library(tidyterra)
 
 # get tidal wetland spatial data --------------------------------------------------------------
 
@@ -109,7 +110,8 @@ p1 <- ggplot(toplo, aes(x = yr, y = area, fill = habitat)) +
   geom_vline(xintercept = 1985, linetype = 'dashed') +
   theme_minimal() +
   theme(
-    legend.position = c(0.75, 0.1)
+    legend.position = c(0.75, 0.1), 
+    panel.grid.minor = element_blank()
   ) +
   labs(
     x = NULL, 
@@ -125,8 +127,8 @@ bbx <- tbsegshed %>%
   st_transform(crs = 4326) %>% 
   st_bbox()
 
-tls <- maptiles::get_tiles(bbx, provider = "CartoDB.PositronNoLabels", zoom = 10)
-dat_ext <- sf::st_as_sfc(bbx) %>% 
+tls <- get_tiles(bbx, provider = "CartoDB.PositronNoLabels", zoom = 10)
+dat_ext <- st_as_sfc(bbx) %>% 
   st_transform(crs = 4326) %>% 
   st_bbox()
 
@@ -148,7 +150,7 @@ labs2 <- tbseg |>
 labs <- rbind(labs1, labs2)
 
 m1 <- ggplot() + 
-  tidyterra::geom_spatraster_rgb(data = tls, maxcell = 1e8) +
+  geom_spatraster_rgb(data = tls, maxcell = 1e8) +
   geom_sf(data = tbsegshed, inherit.aes = F, linewidth = 1, fill = NA, color = 'darkgrey') +
   geom_sf(data = curex, aes(fill = habitat, color = habitat), show.legend = F) +
   geom_sf_text(data = labs, aes(label = bay_segment), inherit.aes = F) +
