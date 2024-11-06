@@ -6,22 +6,52 @@ library(patchwork)
 library(maptiles)
 library(tidyterra)
 
-# get tidal wetland spatial data --------------------------------------------------------------
 
-dat1950raw <- st_read('T:/05_GIS/HISTORICAL/1950_LULC_Emergents/1950_emergent_habitat.shp')
-dat1950 <- dat1950raw |> 
-  select(FLUCCSCODE = HABITAT) |> 
-  mutate(
-    FLUCCSCODE = case_when(
-      FLUCCSCODE == 'Mangrove/Spartina Marsh' ~ 6120, 
-      FLUCCSCODE == 'Juncus Marsh' ~ 6420, 
-      FLUCCSCODE == 'Salt Barren' ~ 6600
-    )
-  ) |> 
-  st_transform(crs = st_crs(tbshed)) |> 
-  st_intersection(tbshed) |>
-  select(-Acres) |> 
-  st_intersection(tbsegshed)
+# 1950s estimates -----------------------------------------------------------------------------
+
+
+# dat1950raw <- st_read('T:/05_GIS/HISTORICAL/1950_LULC_Emergents/1950_emergent_habitat.shp')
+# dat1950 <- dat1950raw |> 
+#   select(FLUCCSCODE = HABITAT) |> 
+#   mutate(
+#     FLUCCSCODE = case_when(
+#       FLUCCSCODE == 'Mangrove/Spartina Marsh' ~ 6120, 
+#       FLUCCSCODE == 'Juncus Marsh' ~ 6420, 
+#       FLUCCSCODE == 'Salt Barren' ~ 6600
+#     )
+#   ) |> 
+#   st_transform(crs = st_crs(tbshed)) |> 
+#   st_intersection(tbshed) |>
+#   select(-Acres) |> 
+#   st_intersection(tbsegshed)
+
+# from TBEP tech report #08-00, numbers differ from those above, especially MR
+# https://drive.google.com/file/d/1yXQcNQa8HC1c2VWCDAwTKacRmgENfbIz/view
+dat1950 <- tribble(
+  ~yr, ~FLUCCSCODE, ~bay_segment, ~area,
+  1950, 6120, "OTB", 3320,
+  1950, 6420, "OTB", 1450,
+  1950, 6600, "OTB", 520,
+  1950, 6120, "HB", 1110,
+  1950, 6420, "HB", 600,
+  1950, 6600, "HB", 200,
+  1950, 6120, "MTB", 5230,
+  1950, 6420, "MTB", 2080,
+  1950, 6600, "MTB", 440,
+  1950, 6120, "LTB", 2560,
+  1950, 6420, "LTB", 610,
+  1950, 6600, "LTB", 190,
+  1950, 6120, "BCB", 2140,
+  1950, 6420, "BCB", 270,
+  1950, 6600, "BCB", 10,
+  1950, 6120, "TCB", 940,
+  1950, 6420, "TCB", 10,
+  1950, 6600, "TCB", 1.34,
+  1950, 6120, "MR", 590,
+  1950, 6420, "MR", 1600,
+  1950, 6600, "MR", 20
+)
+# get tidal wetland spatial data --------------------------------------------------------------
 
 fls <- list.files('T:/05_GIS/SWFWMD/zipped_all_years/', pattern = 'zip', full.names = T)
 
@@ -54,7 +84,6 @@ for(fl in fls){
 }
   
 swfwmdintertidal <- out
-swfwmdintertidal <- c(list(`1950` = dat1950), swfwmdintertidal)
 names(swfwmdintertidal) <- gsub('lulc|\\.zip', '', names(swfwmdintertidal))
 save(swfwmdintertidal, file = 'data/swfwmdintertidal.RData', compress = 'xz')
 
@@ -79,7 +108,13 @@ ests <- swfwmdintertidal |>
     
     })
   ) |> 
-  unnest('value')
+  unnest('value') |> 
+  mutate(
+    yr = as.numeric(yr),
+    area = as.numeric(units::set_units(area, 'acres'))
+  ) |> 
+  bind_rows(dat1950) |> 
+  arrange(yr, bay_segment, FLUCCSCODE)
   
 toplo <- ests |> 
   mutate(
@@ -127,7 +162,7 @@ bbx <- tbsegshed %>%
   st_transform(crs = 4326) %>% 
   st_bbox()
 
-tls <- get_tiles(bbx, provider = "CartoDB.PositronNoLabels", zoom = 10)
+tls <- maptiles::get_tiles(bbx, provider = "CartoDB.PositronNoLabels", zoom = 10)
 dat_ext <- st_as_sfc(bbx) %>% 
   st_transform(crs = 4326) %>% 
   st_bbox()
