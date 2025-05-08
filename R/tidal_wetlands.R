@@ -140,7 +140,7 @@ toplo <- ests |>
 p1 <- ggplot(toplo, aes(x = yr, y = area, fill = habitat)) +
   geom_col(color = 'darkgrey') + 
   scale_fill_manual(values = c('#FFFF14', '#1C99C7', '#83832E')) +
-  scale_x_continuous(breaks = seq(1980, 2020, 10), labels = c(1950,  seq(1990, 2020, 10))) +
+  scale_x_continuous(breaks = seq(1980, 2023, 10), labels = c(1950,  seq(1990, 2023, 10))) +
   facet_wrap(~bay_segment, scales = 'free_y', ncol = 2) + 
   geom_vline(xintercept = 1985, linetype = 'dashed') +
   theme_minimal() +
@@ -167,7 +167,7 @@ dat_ext <- st_as_sfc(bbx) %>%
   st_transform(crs = 4326) %>% 
   st_bbox()
 
-curex <- swfwmdintertidal[['2020']] |> 
+curex <- swfwmdintertidal[['2023']] |> 
   mutate(
     habitat = case_when(
       FLUCCSCODE == 6120 ~ 'Mangrove', 
@@ -189,7 +189,7 @@ m1 <- ggplot() +
   geom_sf(data = tbsegshed, inherit.aes = F, linewidth = 1, fill = NA, color = 'darkgrey') +
   geom_sf(data = curex, aes(fill = habitat, color = habitat), show.legend = F) +
   geom_sf_text(data = labs, aes(label = bay_segment), inherit.aes = F) +
-  annotate('text', x = -82.85, y = 27.37, label = 'Current extent (2020)', size = 5, fontface = 'bold', hjust = 0) +
+  annotate('text', x = -82.85, y = 27.37, label = 'Current extent (2023)', size = 5, fontface = 'bold', hjust = 0) +
   scale_fill_manual(values = c('#FFFF14', '#1C99C7', '#83832E')) +
   scale_color_manual(values = c('#FFFF14', '#1C99C7', '#83832E')) +
   theme(
